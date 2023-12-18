@@ -133,7 +133,7 @@ SipModule.registerSipAccount(sipConfiguration)
 
 #### - Tính năng
 | <div style="text-align: center">Phương thức và tham số</div> | Kết quả trả về và thuộc tính | <div style="text-align: center">Ví dụ<div> |
-| :----------------------------------------------------------- | :--------------------------: | :----------------------------------------- |
+| :----------------------------------------------------------- | :--------------------------: | :-----------------------------------------: |
 | • Khởi tạo: (v1.0.2 không còn hỗ trợ) <br> `initializeModule()` | None | `SipModule.initializeModule()` |
 | • Login SIP: (v1.0.2 không còn hỗ trợ) <br> `registerSipAccount(String, String, String)` | None | `SipModule.registerSipAccount("extension", "password", "IP")` |
 | • Trạng thái đăng kí SIP: <br> `getSipRegistrationState()` | state: string <br> error: string | `SipModule.getSipRegistrationState().then(state => {}).catch(error => {})` |
@@ -203,12 +203,12 @@ React.useEffect(() => {
 > • key và security certificate(secert) do `Voip24h` cung cấp
 <br> • request api: phương thức, endpoint. data body tham khảo từ docs https://docs-sdk.voip24h.vn/
 
-| <div style="text-aligns: center">Chức năng</div> | <div style="text-aligns: center">Phương thức</div> | <div style="text-aligns: center">Đặc tả tham số </div> | <div style="text-aligns: center">Kết quả trả về</div> | <div style="text-aligns: center">Đặc tả thuộc tính</div> |
-| :-------------------- | :------------------ | :---------------------- | :-------------------- | :-------------------- |
-| Lấy access token | GraphModule.getAccessToken(key, secert, callbacks) | • key: string, <br> • secert: string <br> • callbacks = { <br>&emsp; success:(statusCode, message, oauth), <br>&emsp; error:(errorCode, message) <br> } | success = { <br>&emsp; statusCode: int, <br>&emsp; message: string, <br>&emsp; oauth: Object <br> }, <br> error = { <br>&emsp; errorCode: int, <br>&emsp; message: string <br> } | • statusCode: mã trạng thái <br> • oauth: gồm các thuộc tính (token, createAt, expired, isLongAlive) <br> • errorCode: mã lỗi |
-| Request API | GraphModule.sendRequest(method, endpoint, token, params, callback) | • method: MethodRequest(MethodRequest.POST, MethodRequest.GET,...) <br> • endpoint: chuỗi cuối của URL request: "call/find", "call/findone",... <br> • token: access token <br> • params: data body dạng object như { offset: 0, limit: 25 } <br> • callbacks = { <br>&emsp; success:(statusCode, message, jsonObject), <br>&emsp; error:(errorCode, message) <br> } | success = { <br>&emsp; statusCode: int, <br>&emsp;message: string, <br>&emsp;jsonObject: Object <br> }, <br> error = { <br>&emsp; errorCode: int, <br>&emsp; message: string <br> } | • statusCode: mã trạng thái <br> • jsonObject: kết quả response dạng json object <br> • errorCode: mã lỗi |
-| Lấy data object | GraphModule.getData(jsonObject) | jsonObject: kết quả response | object: Object | object gồm các thuộc tính được mô tả ở dữ liệu trả về trong docs https://docs-sdk.voip24h.vn/ |
-| Lấy danh sách data object | GraphModule.getListData(jsonObject) | jsonObject: kết quả response | object: Object | mỗi object gồm các thuộc tính được mô tả ở dữ liệu trả về trong docs https://docs-sdk.voip24h.vn/ |
+| <div style="text-aligns: center">Phương thức</div> | <div style="text-aligns: center">Đặc tả tham số </div> | <div style="text-aligns: center">Kết quả trả về</div> | <div style="text-aligns: center">Đặc tả thuộc tính</div> |
+| :------------------ | :---------------------- | :------------------------- | :-------------------- |
+| • Lấy access token: <br> `GraphModule.getAccessToken(key, secert, callbacks)` | • key: String, <br> • secert: String <br> • callbacks = { <br>&emsp; success:(statusCode, message, oauth), <br>&emsp; error:(errorCode, message) <br> } | success = { <br>&emsp; statusCode: Int, <br>&emsp; message: String, <br>&emsp; oauth: Object <br> }, <br> error = { <br>&emsp; errorCode: Int, <br>&emsp; message: String <br> } | • statusCode: mã trạng thái <br> • oauth: gồm các thuộc tính (token, createAt, expired, isLongAlive) <br> • errorCode: mã lỗi |
+| • Request API: <br> `GraphModule.sendRequest(method, endpoint, token, params, callback)` | • method: MethodRequest(MethodRequest.POST, MethodRequest.GET,...) <br> • endpoint: chuỗi cuối của URL request: "call/find", "call/findone",... <br> • token: access token <br> • params: data body dạng object như { offset: 0, limit: 25 } <br> • callbacks = { <br>&emsp; success:(statusCode, message, jsonObject), <br>&emsp; error:(errorCode, message) <br> } | success = { <br>&emsp; statusCode: Int, <br>&emsp; message: String, <br>&emsp; jsonObject: Object <br> }, <br> error = { <br>&emsp; errorCode: Int, <br>&emsp; message: String <br> } | • statusCode: mã trạng thái <br> • jsonObject: kết quả response dạng json object <br> • errorCode: mã lỗi |
+| • Lấy data object: <br> `GraphModule.getData(jsonObject)` | jsonObject: kết quả response | object: Object | object gồm các thuộc tính được mô tả ở dữ liệu trả về trong docs https://docs-sdk.voip24h.vn/ |
+| • Lấy danh sách data object: <br> `GraphModule.getListData(jsonObject)` | jsonObject: kết quả response | object: Object | mỗi object gồm các thuộc tính được mô tả ở dữ liệu trả về trong docs https://docs-sdk.voip24h.vn/ |
 
 ## License
 ```
