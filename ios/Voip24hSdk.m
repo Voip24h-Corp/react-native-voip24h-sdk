@@ -5,9 +5,7 @@
 
 RCT_EXTERN_METHOD(initializeModule)
 
-RCT_EXTERN_METHOD(registerSipAccount:(NSString *)username
-                  withPassword:(NSString *)password
-                  withDomain:(NSString *)domain)
+RCT_EXTERN_METHOD(registerSipAccount:(NSDictionary *)rawData)
 
 RCT_EXTERN_METHOD(refreshRegisterSipAccount)
 

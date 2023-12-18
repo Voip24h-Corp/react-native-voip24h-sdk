@@ -14,10 +14,10 @@
 
 // These defaults should reflect the SDK versions used by
 // the minimum React Native version supported.
-def DEFAULT_COMPILE_SDK_VERSION = 31
+def DEFAULT_COMPILE_SDK_VERSION = 33
 def DEFAULT_BUILD_TOOLS_VERSION = '28.0.3'
 def DEFAULT_MIN_SDK_VERSION = 23
-def DEFAULT_TARGET_SDK_VERSION = 31
+def DEFAULT_TARGET_SDK_VERSION = 33
 
 def safeExtGet(prop, fallback) {
     rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
@@ -91,6 +91,7 @@ dependencies {
     implementation 'com.facebook.react:react-native:+'  // From node_modules
     implementation "org.jetbrains.kotlin:kotlin-stdlib:1.6.10"
     implementation "org.linphone.no-video:linphone-sdk-android:5.1.36"
+    implementation 'com.google.code.gson:gson:2.9.0'
 }
 
 //def configureReactNativePom(def pom) {

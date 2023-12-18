@@ -1,10 +1,7 @@
 import axios from 'axios';
 import type  { AccessTokenEventCallback, RequestEventCallback } from './callback/GraphEventCallback';
 import OAuth from './model/OAuth';
-import EnumType from  './enum_type/EnumType';
-
-const URL_AUTH = "http://auth2.voip24h.vn/api/token";
-const URL_GRAPH = "http://graph.voip24h.vn/";
+import { URL } from './utils/Constant';
 
 const GraphModule = {
     getAccessToken: function(
@@ -12,7 +9,7 @@ const GraphModule = {
         apiSecert: string, 
         callback: AccessTokenEventCallback
     ) {
-        axios.post(URL_AUTH, {
+        axios.post(URL.GRAPH_TOKEN, {
             api_key: apiKey,
             api_secert: apiSecert
         })
@@ -40,7 +37,7 @@ const GraphModule = {
     ) {
         axios({
             method: method,
-            url: URL_GRAPH + endpoint,
+            url: URL.GRAPH + endpoint,
             headers: { Authorization: `Bearer ${token}` },
             data: params
         })

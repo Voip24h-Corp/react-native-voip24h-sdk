@@ -8,4 +8,16 @@ const MethodRequest = {
     PATCH: 'patch'
 }
 
-export default MethodRequest
+const TransportType = {
+    Udp: 'Udp',
+    Tcp: 'Tcp',
+    Tls: 'Tls',
+    Dtls: 'Dtls'
+}
+
+const ENV = {
+    prod: 'prod',
+    dev: 'dev'
+}
+
+export { MethodRequest, TransportType, ENV }

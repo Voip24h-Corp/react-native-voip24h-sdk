@@ -6,25 +6,16 @@
 //  Copyright © 2022 Facebook. All rights reserved.
 //
 
-import linphonesw
 import React
 import Foundation
 import UIKit
 
 @objc(Voip24hSdk)
 class Voip24hSdk: RCTEventEmitter {
-    private var mCore: Core!
-    private var timeStartStreamingRunning: Int64 = 0
-    private var mRegistrationDelegate : CoreDelegate!
-    private var isPause: Bool = false
     
-//    private var bluetoothMic: AudioDevice?
-//    private var bluetoothSpeaker: AudioDevice?
-//    private var earpiece: AudioDevice?
-//    private var loudMic: AudioDevice?
-//    private var loudSpeaker: AudioDevice?
-//    private var microphone: AudioDevice?
-//    private var isSpeakerEnabled: Bool = false
+    lazy private var sipModule: SipModule = {
+        return SipModule.getInstance(self)
+    }()
     
     @objc
     override static func requiresMainQueueSetup() -> Bool {
@@ -36,190 +27,29 @@ class Voip24hSdk: RCTEventEmitter {
         return ["AccountRegistrationStateChanged", "Ring", "Up", "Hangup", "Paused", "Resuming", "Missed", "Error"]
     }
     
-    private func deleteSipAccount() {
-        // To completely remove an Account
-        if let account = mCore.defaultAccount {
-            mCore.removeAccount(account: account)
-            
-            // To remove all accounts use
-            mCore.clearAccounts()
-            
-            // Same for auth info
-            mCore.clearAllAuthInfo()
-        }
-    }
+//    @objc(initializeModule)
+//    func initializeModule() {
+//        sipModule.initializeModule()
+//    }
     
-    @objc(initializeModule)
-    func initializeModule() {
+    @objc(registerSipAccount:)
+    func registerSipAccount(rawData: NSDictionary) {
         do {
-            LoggingService.Instance.logLevel = LogLevel.Debug
-            
-            try? mCore = Factory.Instance.createCore(configPath: "", factoryConfigPath: "", systemContext: nil)
-            try? mCore.start()
-            
-            // Create a Core listener to listen for the callback we need
-            // In this case, we want to know about the account registration status
-            mRegistrationDelegate = CoreDelegateStub(
-                onCallStateChanged: {(
-                    core: Core,
-                    call: Call,
-                    state: Call.State?,
-                    message: String
-                ) in
-                    switch (state) {
-                    case .IncomingReceived:
-                        // Immediately hang up when we receive a call. There's nothing inherently wrong with this
-                        // but we don't need it right now, so better to leave it deactivated.
-                        // try! call.terminate()
-                        NSLog("IncomingReceived")
-                        let ext = core.defaultAccount?.contactAddress?.username ?? ""
-                        let phone = call.remoteAddress?.username ?? ""
-                        self.sendEvent(withName: "Ring", body: ["extension": ext, "phone": phone, "type": CallType.inbound.rawValue])
-                    case .OutgoingInit:
-                        // First state an outgoing call will go through
-                        NSLog("OutgoingInit")
-                    case .OutgoingProgress:
-                        // First state an outgoing call will go through
-                        NSLog("OutgoingProgress")
-                        let ext = core.defaultAccount?.contactAddress?.username ?? ""
-                        let phone = call.remoteAddress?.username ?? ""
-                        self.sendEvent(withName: "Ring", body: ["extension": ext, "phone": phone, "type": CallType.outbound.rawValue])
-                    case .OutgoingRinging:
-                        // Once remote accepts, ringing will commence (180 response)
-                        NSLog("OutgoingRinging")
-                    case .Connected:
-                        NSLog("Connected")
-                    case .StreamsRunning:
-                        // This state indicates the call is active.
-                        // You may reach this state multiple times, for example after a pause/resume
-                        // or after the ICE negotiation completes
-                        // Wait for the call to be connected before allowing a call update
-                        NSLog("StreamsRunning")
-                        if(!self.isPause) {
-                            self.timeStartStreamingRunning = Int64(Date().timeIntervalSince1970 * 1000)
-                        }
-                        self.isPause = false
-                        let callId = call.callLog?.callId ?? ""
-                        self.sendEvent(withName: "Up", body: ["callId": callId])
-                    case .Paused:
-                        NSLog("Paused")
-                        self.isPause = true
-                        self.sendEvent(withName: "Paused", body: nil)
-                    case .Resuming:
-                        NSLog("Resuming")
-                        self.sendEvent(withName: "Resuming", body: nil)
-                    case .PausedByRemote:
-                        NSLog("PausedByRemote")
-                    case .Updating:
-                        // When we request a call update, for example when toggling video
-                        NSLog("Updating")
-                    case .UpdatedByRemote:
-                        NSLog("UpdatedByRemote")
-                    case .Released:
-                        if(self.isMissed(callLog: call.callLog)) {
-                            NSLog("Missed")
-                            let callee = call.remoteAddress?.username ?? ""
-                            let totalMissed = core.missedCallsCount
-                            self.sendEvent(withName: "Missed", body: ["phone": callee, "totalMissed": totalMissed])
-                        } else {
-                            NSLog("Released", "")
-                        }
-                    case .End:
-                        NSLog("End", "")
-                        let duration = self.timeStartStreamingRunning == 0 ? 0 : Int64(Date().timeIntervalSince1970 * 1000) - self.timeStartStreamingRunning
-                        self.sendEvent(withName: "Hangup", body: ["duration": duration])
-                        self.timeStartStreamingRunning = 0
-                    case .Error:
-                        NSLog("Error")
-                        self.sendEvent(withName: "Error", body: ["message": message])
-                    default:
-                        NSLog("Nothing")
-                    }
-                },
-//                onAudioDevicesListUpdated: { (core: Core) in
-//                    let currentAudioDeviceType = core.currentCall?.outputAudioDevice?.type
-//                    if(currentAudioDeviceType != AudioDeviceType.Speaker && currentAudioDeviceType != AudioDeviceType.Earpiece) {
-//                        return
-//                    }
-//                    let audioOutputType = AudioOutputType.allCases[currentAudioDeviceType!.rawValue].rawValue
-//                    self.sendEvent(withName: "AudioDevicesChanged", body: ["audioOutputType": audioOutputType])
-//                },
-                onAccountRegistrationStateChanged: { (core: Core, account: Account, state: RegistrationState, message: String) in
-                    self.sendEvent(withName: "AccountRegistrationStateChanged", body: ["registrationState": RegisterSipState.allCases[state.rawValue].rawValue, "message": message])
-                }
-            )
-            mCore.addDelegate(delegate: mRegistrationDelegate)
-        }
-    }
-    
-    private func isMissed(callLog: CallLog?) -> Bool {
-        return (callLog?.dir == Call.Dir.Incoming && callLog?.status == Call.Status.Missed)
-    }
-    
-    @objc(registerSipAccount:withPassword:withDomain:)
-    func registerSipAccount(username: String, password: String, domain: String) {
-        do {
-            let transport = TransportType.Udp
-            
-            // To configure a SIP account, we need an Account object and an AuthInfo object
-            // The first one is how to connect to the proxy server, the second one stores the credentials
-            
-            // The auth info can be created from the Factory as it's only a data class
-            // userID is set to null as it's the same as the username in our case
-            // ha1 is set to null as we are using the clear text password. Upon first register, the hash will be computed automatically.
-            // The realm will be determined automatically from the first register, as well as the algorithm
-            let authInfo = try Factory.Instance.createAuthInfo(username: username, userid: "", passwd: password, ha1: "", realm: "", domain: domain)
-            
-            // Account object replaces deprecated ProxyConfig object
-            // Account object is configured through an AccountParams object that we can obtain from the Core
-            let accountParams = try mCore.createAccountParams()
-            
-            // A SIP account is identified by an identity address that we can construct from the username and domain
-            let identity = try Factory.Instance.createAddress(addr: String("sip:" + username + "@" + domain))
-            try! accountParams.setIdentityaddress(newValue: identity)
-            
-            // We also need to configure where the proxy server is located
-            let address = try Factory.Instance.createAddress(addr: String("sip:" + domain))
-            
-            // We use the Address object to easily set the transport protocol
-            try address.setTransport(newValue: transport)
-            try accountParams.setServeraddress(newValue: address)
-            // And we ensure the account will start the registration process
-            accountParams.registerEnabled = true
-            
-            // Now that our AccountParams is configured, we can create the Account object
-            let account = try mCore.createAccount(params: accountParams)
-            
-            // Now let's add our objects to the Core
-            mCore.addAuthInfo(info: authInfo)
-            try mCore.addAccount(account: account)
-            
-            // Also set the newly added account as default
-            mCore.defaultAccount = account
-            
-            
+            let sipConfiguration = try SipConfiguration(dictionary: rawData as! [String : Any])
+            sipModule.registerSipAccount(sipConfiguration: sipConfiguration)
         } catch {
-            NSLog(error.localizedDescription)
+            print(error)
         }
     }
     
     @objc(unregisterSipAccount)
     func unregisterSipAccount() {
-        // Here we will disable the registration of our Account
-        NSLog("Try to unregister")
-        if let account = mCore.defaultAccount {
-            let params = account.params
-            let clonedParams = params?.clone()
-            clonedParams?.registerEnabled = false
-            account.params = clonedParams
-            mCore.clearProxyConfig()
-            deleteSipAccount()
-        }
+        sipModule.unregisterSipAccount()
     }
     
     @objc(refreshRegisterSipAccount)
     func refreshRegisterSipAccount() {
-        mCore.refreshRegisters()
+        sipModule.refreshRegisterSipAccount()
     }
     
 //    @objc(bluetoothAudio:withRejecter:)
@@ -237,159 +67,37 @@ class Voip24hSdk: RCTEventEmitter {
     
     @objc(call:)
     func call(recipient: String) {
-        NSLog("Try to call out")
-        do {
-            // As for everything we need to get the SIP URI of the remote and convert it sto an Address
-            let domain: String? = mCore.defaultAccount?.params?.domain
-            NSLog("Domain: %@", domain ?? "")
-            if (domain == nil) {
-                return NSLog("Outgoing call failure: can't create sip uri")
-            }
-            let sipUri = String("sip:" + recipient + "@" + domain!)
-            
-            NSLog("Sip URI: %@", sipUri)
-            
-            let remoteAddress = try Factory.Instance.createAddress(addr: sipUri)
-            
-            // We also need a CallParams object
-            // Create call params expects a Call object for incoming calls, but for outgoing we must use null safely
-            let params = try mCore.createCallParams(call: nil)
-            
-            // We can now configure it
-            // Here we ask for no encryption but we could ask for ZRTP/SRTP/DTLS
-            params.mediaEncryption = MediaEncryption.None
-            // If we wanted to start the call with video directly
-            //params.videoEnabled = true
-            
-            // Finally we start the call
-            let _ = mCore.inviteAddressWithParams(addr: remoteAddress, params: params)
-            
-        } catch {
-            NSLog(error.localizedDescription)
-        }
+        sipModule.call(recipient: recipient)
     }
     
     @objc(hangup)
     func hangup() {
-        NSLog("Trying to hang up")
-        do {
-            
-            if (mCore.callsNb == 0) { return }
-            
-            // If the call state isn't paused, we can get it using core.currentCall
-            let coreCall = (mCore.currentCall != nil) ? mCore.currentCall : mCore.calls[0]
-            
-            if(coreCall == nil) {
-                return
-            }
-            
-            if(coreCall!.state == Call.State.IncomingReceived) {
-                decline()
-                return
-            }
-            
-            // Terminating a call is quite simple
-            if let call = coreCall {
-                try call.terminate()
-            } else {
-                NSLog("No call to terminate")
-            }
-        } catch {
-            NSLog(error.localizedDescription)
-        }
+        sipModule.hangup()
     }
     
     @objc(decline)
     func decline() {
-        NSLog("Try to decline")
-        do {
-            try mCore.currentCall?.decline(reason: Reason.Forbidden)
-            // resolve(true)
-        } catch {
-            NSLog(error.localizedDescription)
-            // reject("Call decline failed", "Call decline failed", error)
-        }
+        sipModule.decline()
     }
     
     @objc(acceptCall)
     func acceptCall() {
-        NSLog("Try accept call")
-        do {
-            try mCore.currentCall?.accept()
-        } catch {
-            NSLog(error.localizedDescription)
-        }
+        sipModule.acceptCall()
     }
     
     @objc(pause)
     func pause() {
-        NSLog("Try to pause")
-        do {
-            if (mCore.callsNb == 0) { return }
-            
-            let coreCall = (mCore.currentCall != nil) ? mCore.currentCall : mCore.calls[0]
-            
-            if let call = coreCall {
-                try call.pause()
-            } else {
-                NSLog("No call to pause")
-            }
-            
-        } catch {
-            NSLog(error.localizedDescription)
-        }
+        sipModule.pause()
     }
     
     @objc(resume)
     func resume() {
-        NSLog("Try to resume")
-        do {
-            if (mCore.callsNb == 0) { return }
-            
-            let coreCall = (mCore.currentCall != nil) ? mCore.currentCall : mCore.calls[0]
-            
-            if let call = coreCall {
-                try call.resume()
-            } else {
-                NSLog("No to call to resume")
-            }
-            
-        } catch {
-            NSLog(error.localizedDescription)
-        }
+        sipModule.resume()
     }
     
     @objc(transfer:)
     func transfer(recipient: String) {
-        NSLog("Try to transfer")
-        do {
-            if (mCore.callsNb == 0) { return }
-            
-            let coreCall = (mCore.currentCall != nil) ? mCore.currentCall : mCore.calls[0]
-            
-            let domain: String? = mCore.defaultAccount?.params?.domain
-            NSLog("Domain: %@", domain ?? "")
-            if (domain == nil) {
-                NSLog("Outgoing call failure: can't create sip uri")
-                return
-            }
-            
-            let address = mCore.interpretUrl(url: String("sip:\(recipient)@\(domain!)"))
-            NSLog("Address: %@", String("sip:\(recipient)@\(domain!)"))
-            if(address == nil) {
-                NSLog("Outgoing call failure: can't create sip uri")
-                return
-            }
-            
-            if let call = coreCall {
-                try call.transferTo(referTo: address!)
-            } else {
-                NSLog("No call to transfer")
-            }
-            
-        } catch {
-            NSLog(error.localizedDescription)
-        }
+        sipModule.transfer(recipient: recipient)
     }
     
 //    @objc(loudAudio:withRejecter:)
@@ -479,104 +187,43 @@ class Voip24hSdk: RCTEventEmitter {
 
     @objc(sendDtmf:)
     func sendDtmf(dtmf: String) {
-        do {
-            try mCore.currentCall?.sendDtmf(dtmf: dtmf.utf8CString[0])
-        } catch {
-            NSLog("DTMF not recognised", error.localizedDescription)
-        }
+        sipModule.sendDtmf(dtmf: dtmf)
     }
     
     @objc(toggleMic:withRejecter:)
     func toggleMic(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-        mCore.micEnabled = !mCore.micEnabled
-        resolve(mCore.micEnabled)
+        sipModule.toggleMic(resolve: resolve, reject: reject)
     }
     
     @objc(toggleSpeaker:withRejecter:)
     func toggleSpeaker(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-        let currentAudioDevice = mCore.currentCall?.outputAudioDevice
-        let speakerEnabled = currentAudioDevice?.type == AudioDeviceType.Speaker
-        
-        // We can get a list of all available audio devices using
-        // Note that on tablets for example, there may be no Earpiece device
-        for audioDevice in mCore.audioDevices {
-            
-            // For IOS, the Speaker is an exception, Linphone cannot differentiate Input and Output.
-            // This means that the default output device, the earpiece, is paired with the default phone microphone.
-            // Setting the output audio device to the microphone will redirect the sound to the earpiece.
-            if (speakerEnabled && audioDevice.type == AudioDeviceType.Microphone) {
-                mCore.currentCall?.outputAudioDevice = audioDevice
-                // isSpeakerEnabled = false
-                return
-            } else if (!speakerEnabled && audioDevice.type == AudioDeviceType.Speaker) {
-                mCore.currentCall?.outputAudioDevice = audioDevice
-                // isSpeakerEnabled = true
-                return
-            }
-            /* If we wanted to route the audio to a bluetooth headset
-             else if (audioDevice.type == AudioDevice.Type.Bluetooth) {
-             core.currentCall?.outputAudioDevice = audioDevice
-             }*/
-        }
-        resolve(true)
+        sipModule.toggleSpeaker(resolve: resolve, reject: reject)
     }
     
     @objc(getCallId:withRejecter:)
     func getCallId(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-        let callId = mCore.currentCall?.callLog?.callId
-        if (callId != nil && !callId!.isEmpty) {
-            resolve(callId!)
-        } else {
-            reject("Call ID not found", "Call ID not found", nil)
-        }
+        sipModule.getCallId(resolve: resolve, reject: reject)
     }
     
     @objc(getSipRegistrationState:withRejecter:)
     func getSipRegistrationState(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-        let state = mCore.defaultAccount?.state
-        if(state != nil) {
-            resolve(RegisterSipState.allCases[state!.rawValue].rawValue)
-        } else {
-            reject("Register state not found", "Register state not found", nil)
-        }
+        sipModule.getSipRegistrationState(resolve: resolve, reject: reject)
     }
     
     @objc(getMissedCalls:withRejecter:)
     func getMissedCalls(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-        resolve(mCore.missedCallsCount)
+        sipModule.getMissedCalls(resolve: resolve, reject: reject)
     }
     
     @objc(isMicEnabled:withRejecter:)
     func isMicEnabled(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock){
-        resolve(mCore.micEnabled)
+        sipModule.isMicEnabled(resolve: resolve, reject: reject)
     }
     
     @objc(isSpeakerEnabled:withRejecter:)
     func isSpeakerEnabled(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-        let currentAudioDevice = mCore.currentCall?.outputAudioDevice
-        let speakerEnabled = currentAudioDevice?.type == AudioDeviceType.Speaker
-        resolve(speakerEnabled)
+        sipModule.isSpeakerEnabled(resolve: resolve, reject: reject)
     }
-}
-
-
-public enum RegisterSipState : String, CaseIterable {
-    /// Initial state for registrations.
-    case None = "None"
-    /// Registration is in progress.
-    case Progress = "Progress"
-    /// Registration is successful.
-    case Ok = "Ok"
-    /// Unregistration succeeded.
-    case Cleared = "Cleared"
-    /// Registration failed.
-    case Failed = "Failed"
-}
-
-
-public enum CallType: String, CaseIterable {
-    case inbound = "inbound"
-    case outbound = "outbound"
 }
 
 //public enum AudioOutputType: String, CaseIterable {

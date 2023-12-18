@@ -21,6 +21,10 @@
 /* Begin PBXFileReference section */
 		134814201AA4EA6300B7C361 /* libVoip24hSdk.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libVoip24hSdk.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		FC3706932844CE8A0049E837 /* Voip24hSdk-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Voip24hSdk-Bridging-Header.h"; sourceTree = "<group>"; };
+		FC6D2ACC2B144CDA0043018E /* CallType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallType.swift; sourceTree = "<group>"; };
+		FC6D2ACD2B144CDA0043018E /* RegisterSipState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterSipState.swift; sourceTree = "<group>"; };
+		FC6D2ACF2B144CDA0043018E /* SipModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SipModule.swift; sourceTree = "<group>"; };
+		FC6D2AD52B144EFB0043018E /* SipConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SipConfiguration.swift; sourceTree = "<group>"; };
 		FC88D51828504D4500D54B54 /* Voip24hSdk.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Voip24hSdk.m; sourceTree = "<group>"; };
 		FC88D51928504D4500D54B54 /* Voip24hSdk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Voip24hSdk.h; sourceTree = "<group>"; };
 		FC88D51A28504D5100D54B54 /* Voip24hSdk.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Voip24hSdk.swift; sourceTree = "<group>"; };
@@ -48,12 +52,40 @@
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
+				FC6D2AD42B144EE90043018E /* Models */,
+				FC6D2ACB2B144CDA0043018E /* Enum */,
+				FC6D2ACE2B144CDA0043018E /* SipModule */,
 				FC88D51A28504D5100D54B54 /* Voip24hSdk.swift */,
 				FC88D51928504D4500D54B54 /* Voip24hSdk.h */,
 				FC88D51828504D4500D54B54 /* Voip24hSdk.m */,
 				FC3706932844CE8A0049E837 /* Voip24hSdk-Bridging-Header.h */,
 				134814211AA4EA7D00B7C361 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		FC6D2ACB2B144CDA0043018E /* Enum */ = {
+			isa = PBXGroup;
+			children = (
+				FC6D2ACC2B144CDA0043018E /* CallType.swift */,
+				FC6D2ACD2B144CDA0043018E /* RegisterSipState.swift */,
+			);
+			path = Enum;
+			sourceTree = "<group>";
+		};
+		FC6D2ACE2B144CDA0043018E /* SipModule */ = {
+			isa = PBXGroup;
+			children = (
+				FC6D2ACF2B144CDA0043018E /* SipModule.swift */,
+			);
+			path = SipModule;
+			sourceTree = "<group>";
+		};
+		FC6D2AD42B144EE90043018E /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				FC6D2AD52B144EFB0043018E /* SipConfiguration.swift */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */

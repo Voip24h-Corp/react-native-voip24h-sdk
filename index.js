@@ -1,6 +1,8 @@
 import GraphModule from "./src/GraphModule";
-import MethodRequest from "./src/enum_type/EnumType";
-import { NativeModules } from 'react-native'
+import { MethodRequest, TransportType } from "./src/enum_type/EnumType";
+import SipConfigurationBuilder from "./src/model/SipConfiguration";
+import { NativeModules } from 'react-native';
+import PushNotificationModule from "./src/PushNotificationModule";
 
 const LINKING_ERROR =
   `The package 'react-native-sip-phone' doesn't seem to be linked. Make sure: \n\n` +
@@ -19,4 +21,4 @@ const SipModule = NativeModules.Voip24hSdk
       }
     )
  
-export { GraphModule, MethodRequest, SipModule }
+export { GraphModule, MethodRequest, TransportType, SipModule, SipConfigurationBuilder, PushNotificationModule }
