@@ -9,6 +9,7 @@
 - [Cài đặt](#cài-đặt)
 - [Sử dụng](#sử-dụng)
 - [CallKit](#callkit)
+- [Push Notification](#push-notification)
 - [Graph](#graph)
 
 ## Tính năng
@@ -39,11 +40,11 @@
         ```
 
 ## Cài đặt
-Sử dụng npm:
+#### - NPM:
 ```bash
 $ npm install react-native-voip24h-sdk
 ```
-Linking module:
+#### - Linking module:
 - Android: 
     - Trong file `settings.gradle`
         ```
@@ -106,51 +107,69 @@ Linking module:
 ```
 import { NativeEventEmitter } from 'react-native';
 import { GraphModule, SipModule, MethodRequest } from 'react-native-voip24h-sdk';
-// TODO: What to do with the module?
-console.log(GraphModule);
-console.log(SipModule);
-console.log(MethodRequest);
+
+// TODO: To do something with GraphModule, SipModule
 ```
 
 ## CallKit
-| <div style="text-align: center">Chức năng</div> | <div style="text-align: center">Phương thức và tham số</div> | Kết quả trả về và thuộc tính | <div style="text-align: center">Ví dụ<div> |
-| :---------------------------------------------- | :----------------------------------------------------------- | :--------------------------: | :----------------------------------------- |
-| Khởi tạo                             | SipModule.initializeModule()                          | None |
-| Login tài khoản SIP                  | SipModule.registerSipAccount(extension, password, IP) | None |
-| Lấy trạng thái đăng kí tài khoản SIP | SipModule.getSipRegistrationState()                   | state: string <br> error: string   | <code> SipModule.getSipRegistrationState() <br>&emsp; .then((state) => /\*TODO\*/) <br>&emsp; .catch((error) => /\*TODO\*/) </code> |
-| Logout tài khoản SIP                 | SipModule.unregisterSipAccount()                      | None |
-| Refresh kết nối SIP                  | SipModule.refreshRegisterSipAccount()                 | None |
-| Gọi đi                               | SipModule.call(phoneNumber)                           | None |
-| Ngắt máy                             | SipModule.hangup()                                    | None |
-| Chấp nhận cuộc gọi đến               | SipModule.acceptCall()                                | None |
-| Từ chối cuộc gọi đến                 | SipModule.decline()                                   | None |
-| Transfer cuộc gọi                    | SipModule.transfer("extension")                       | None |
-| Lấy call id                          | SipModule.getCallId()                                 | state: string <br> error: string   | <code>SipModule.getCallId() <br>&emsp; .then((callId) => /\*TODO\*/) <br>&emsp; .catch((error) => /\*TODO\*/)</code> |
-| Lấy số lượng cuộc gọi nhỡ            | SipModule.getMissedCalls()                            | result: int <br> error: string     | <code>SipModule.getMissedCalls() <br>&emsp; .then((result) => /\*TODO\*/) <br>&emsp; .catch((error) => /\*TODO\*/)</code> |
-| Pause cuộc gọi                       | SipModule.pause()                                     | None |
-| Resume cuộc gọi                      | SipModule.resume()                                    | None |
-| Bật/Tắt mic                          | SipModule.toggleMic()                                 | result: boolean <br> error: string | <code>SipModule.toggleMic() <br>&emsp; .then((result) => /\*TODO\*/) <br>&emsp; .catch((error) => /\*TODO\*/)</code> |
-| Trạng thái mic                       | SipModule.isMicEnabled()                              | result: boolean <br> error: string | <code>SipModule.isMicEnabled() <br>&emsp; .then((result) => /\*TODO\*/) <br>&emsp; .catch((error) => /\*TODO\*/)</code> |
-| Bật/Tắt loa                          | SipModule.toggleSpeaker()                             | result: boolean <br> error: string | <code>SipModule.toggleSpeaker() <br>&emsp; .then((result) => /\*TODO\*/) <br>&emsp; .catch((error) => /\*TODO\*/)</code> |
-| Trạng thái loa                       | SipModule.isSpeakerEnabled()                          | result: boolean <br> error: string | <code>SipModule.isSpeakerEnabled() <br>&emsp; .then((result) => /\*TODO\*/) <br>&emsp; .catch((error) => /\*TODO\*/)</code> |
-| Send DTMF                            | SipModule.sendDtmf("number#")                         | None |
+#### - Thay đổi v1.0.2
+- Loại bỏ cơ chế init module:
+  > ~~SipModule.initializeModule()~~
+- Loại bỏ cơ chế Login SIP bằng 3 tham số:
+  > ~~SipModule.registerSipAccount("extension", "password", "IP")~~
+- Cơ chế Login SIP mới:
+```
+import { TransportType, SipConfigurationBuilder } from 'react-native-voip24h-sdk'
 
-### Event listener SIP:
-> • đăng kí event dạng object
-<br> • đăng kí event trong React.useEffect()
+var sipConfiguration = new SipConfigurationBuilder('extension','password','ip')
+	.setPort(port) // (optional)
+	.setTransportType(TransportType.Udp) // Udp, Tcp, Tls, Dtls (optional)
+	.setKeepAlive(true) // (optional)
+	.build()
+
+SipModule.registerSipAccount(sipConfiguration)
+```
+> Note: v1.0.1 vẫn sử dụng phương thức cũ
+
+#### - Tính năng
+| <div style="text-align: center">Phương thức và tham số</div> | Kết quả trả về và thuộc tính | <div style="text-align: center">Ví dụ<div> |
+| :----------------------------------------------------------- | :--------------------------: | :----------------------------------------- |
+| • Khởi tạo: (v1.0.2 không còn hỗ trợ) <br> `initializeModule()` | None | `SipModule.initializeModule()` |
+| • Login SIP: (v1.0.2 không còn hỗ trợ) <br> `registerSipAccount(String, String, String)` | None | `SipModule.registerSipAccount("extension", "password", "IP")` |
+| • Trạng thái đăng kí SIP: <br> `getSipRegistrationState()` | state: string <br> error: string | `SipModule.getSipRegistrationState().then(state => {}).catch(error => {})` |
+| • Logout SIP: <br> `unregisterSipAccount()` | None | `SipModule.unregisterSipAccount()` |
+| • Refresh kết nối SIP: <br> `refreshRegisterSipAccount()` | None | `SipModule.refreshRegisterSipAccount()` |
+| • Gọi đi: <br> `call(String)` | None | `SipModule.call("phoneNumber")` |
+| • Ngắt máy: <br> `hangup()` | None | `SipModule.hangup()` |
+| • Chấp nhận cuộc gọi đến: <br> `acceptCall()` | None | `SipModule.acceptCall()` |
+| • Từ chối cuộc gọi đến: <br> `decline()` | None | `SipModule.decline()` |
+| • Transfer cuộc gọi: <br> `transfer(String)` | None | `SipModule.transfer("extension")` |
+| • Call id: <br> `getCallId()` | state: string <br> error: string | `SipModule.getCallId().then(callId => {}).catch(error => {})` |
+| • Số lượng cuộc gọi nhỡ: <br> `getMissedCalls()` | result: int <br> error: string | `SipModule.getMissedCalls().then(result => {}).catch(error => {})` |
+| • Pause cuộc gọi: <br> `pause()` | None | `SipModule.pause()` |
+| • Resume cuộc gọi: <br> `resume()` | None | `SipModule.resume()` |
+| • Bật/Tắt mic: <br> `toggleMic()` | result: boolean <br> error: string | `SipModule.toggleMic().then(result => {}).catch(error => {})` |
+| • Trạng thái mic: <br> `isMicEnabled()` | result: boolean <br> error: string | `SipModule.isMicEnabled().then(result => {}).catch(error => {})` |
+| • Bật/Tắt loa: <br> `toggleSpeaker()` | result: boolean <br> error: string | `SipModule.toggleSpeaker().then(result => {}).catch(error => {})` |
+| • Trạng thái loa: <br> `isSpeakerEnabled()` | result: boolean <br> error: string | `SipModule.isSpeakerEnabled().then(result => {}).catch(error => {})` |
+| • Send DTMF: <br> `sendDtmf(String)` | None | `SipModule.sendDtmf("number#")` |
+
+#### - Event listener SIP:
+> • Đăng kí event dạng object
+<br> • Đăng kí event trong React.useEffect()
 
 | <div style="text-align: left">Tên sự kiện</div> | <div style="text-align: left">Kết quả trả về và thuộc tính</div> | <div style="text-align: left">Đặc tả thuộc tính</div> |
 | :---------------------------------------------- | :--------------------------------------------------------------- | :---------------------------------------------------- |
-| AccountRegistrationStateChanged | body = { <br>&emsp; registrationState: string, <br>&emsp; message: string <br> }               | registrationState: trạng thái kết nối của sip (None/Progress/Ok/Cleared/Failed) <br> message: chuỗi mô tả trạng thái</div> |
-| Ring                            | body = { <br>&emsp; extension: string, <br>&emsp; phone: string <br>&emsp; type: string <br> } | extension: máy nhánh <br> phone: số điện thoại người (gọi/nhận) <br> type: loại cuộc gọi(inbound/outbound) |
-| Up                              | body = { <br>&emsp; callId: string <br> }                                                      | callId: mã cuộc gọi
-| Hangup                          | body = { <br>&emsp; duration: long <br> }                                                      | duration: thời gian đàm thoại (milliseconds)
+| AccountRegistrationStateChanged | body = { <br>&emsp; registrationState: String, <br>&emsp; message: String <br> }               | • registrationState: trạng thái kết nối của sip (None/Progress/Ok/Cleared/Failed) <br> • message: chuỗi mô tả trạng thái</div> |
+| Ring                            | body = { <br>&emsp; extension: String, <br>&emsp; phone: String <br>&emsp; type: String <br> } | • extension: máy nhánh <br> • phone: số điện thoại người (gọi/nhận) <br> • type: loại cuộc gọi(inbound/outbound) |
+| Up                              | body = { <br>&emsp; callId: String <br> }                                                      | • callId: mã cuộc gọi
+| Hangup                          | body = { <br>&emsp; duration: Long <br> }                                                      | • duration: thời gian đàm thoại (milliseconds)
 | Paused                          | None
 | Resuming                        | None
-| Missed                          | body = { <br>&emsp; phone: string, <br>&emsp; totalMissed: int <br> }                          | phone: số điện thoại người gọi <br> totalMissed: tổng cuộc gọi nhỡ
-| Error                           | body = { <br>&emsp; message: string <br> }                                                     | message: chuỗi mô tả trạng thái lỗi
+| Missed                          | body = { <br>&emsp; phone: String, <br>&emsp; totalMissed: Int <br> }                          | • phone: số điện thoại người gọi <br> • totalMissed: tổng cuộc gọi nhỡ
+| Error                           | body = { <br>&emsp; message: String <br> }                                                     | • message: chuỗi mô tả trạng thái lỗi
 
-### Ví dụ
+#### - Ví dụ lắng nghe event callback
 ```
 const callbacks =  {
     AccountRegistrationStateChanged: (body) => console.log(`AccountRegistrationStateChanged -> registrationState: ${body.registrationState} - message: ${body.message}`),
@@ -177,6 +196,8 @@ React.useEffect(() => {
     };
 }, []);
 ```
+## Push Notification
+
 
 ## Graph
 > • key và security certificate(secert) do `Voip24h` cung cấp
