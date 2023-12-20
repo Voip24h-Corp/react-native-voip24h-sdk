@@ -40,11 +40,11 @@
         ```
 
 ## Cài đặt
-#### - NPM:
+#### Step 1: NPM:
 ```bash
 $ npm install react-native-voip24h-sdk
 ```
-#### - Linking module:
+#### Step 2: Linking module:
 - Android: 
     - Trong file `settings.gradle`
         ```
@@ -197,18 +197,21 @@ React.useEffect(() => {
 }, []);
 ```
 ## Push Notification
-
+- Android
+  + Chúng tôi sử dụng Firebase Cloud Messaging (FCM) cho Push Notification. Vì vậy, bạn phải tạo dự án Cloud Messaging trong bảng điều khiển Firebase. Để tạo một dự án Cloud Messaging trong FireBase, đi đến trang https://console.firebase.google.com/
+ 
+- IOS
 
 ## Graph
 > • key và security certificate(secert) do `Voip24h` cung cấp
-<br> • request api: phương thức, endpoint. data body tham khảo từ docs https://docs-sdk.voip24h.vn/
+<br> • request api: method, resource-path. data body tham khảo từ docs https://docs-sdk.voip24h.vn/
 
-| <div style="text-aligns: center">Phương thức</div> | <div style="text-aligns: center">Đặc tả tham số </div> | <div style="text-aligns: center">Kết quả trả về</div> | <div style="text-aligns: center">Đặc tả thuộc tính</div> |
-| :------------------ | :---------------------- | :------------------------- | :-------------------- |
-| • Lấy access token: <br> `GraphModule.getAccessToken(key, secert, callbacks)` | • key: String, <br> • secert: String <br> • callbacks = { <br>&emsp; success:(statusCode, message, oauth), <br>&emsp; error:(errorCode, message) <br> } | success = { <br>&emsp; statusCode: Int, <br>&emsp; message: String, <br>&emsp; oauth: Object <br> }, <br> error = { <br>&emsp; errorCode: Int, <br>&emsp; message: String <br> } | • statusCode: mã trạng thái <br> • oauth: gồm các thuộc tính (token, createAt, expired, isLongAlive) <br> • errorCode: mã lỗi |
-| • Request API: <br> `GraphModule.sendRequest(method, endpoint, token, params, callback)` | • method: MethodRequest(MethodRequest.POST, MethodRequest.GET,...) <br> • endpoint: chuỗi cuối của URL request: "call/find", "call/findone",... <br> • token: access token <br> • params: data body dạng object như { offset: 0, limit: 25 } <br> • callbacks = { <br>&emsp; success:(statusCode, message, jsonObject), <br>&emsp; error:(errorCode, message) <br> } | success = { <br>&emsp; statusCode: Int, <br>&emsp; message: String, <br>&emsp; jsonObject: Object <br> }, <br> error = { <br>&emsp; errorCode: Int, <br>&emsp; message: String <br> } | • statusCode: mã trạng thái <br> • jsonObject: kết quả response dạng json object <br> • errorCode: mã lỗi |
-| • Lấy data object: <br> `GraphModule.getData(jsonObject)` | jsonObject: kết quả response | object: Object | object gồm các thuộc tính được mô tả ở dữ liệu trả về trong docs https://docs-sdk.voip24h.vn/ |
-| • Lấy danh sách data object: <br> `GraphModule.getListData(jsonObject)` | jsonObject: kết quả response | object: Object | mỗi object gồm các thuộc tính được mô tả ở dữ liệu trả về trong docs https://docs-sdk.voip24h.vn/ |
+| <div style="text-aligns: center">Phương thức</div> | <div style="text-aligns: center">Đặc tả tham số </div> | <div style="text-aligns: center">Kết quả trả về</div> |
+| :------------------ | :---------------------- | :------------------------- |
+| • Lấy access token: <br> `GraphModule.getAccessToken(key, secert, callbacks)` | • key: String, <br> • secert: String <br> • callbacks = { <br>&emsp; success:(statusCode, message, oauth), <br>&emsp; error:(errorCode, message) <br> } | success = { <br>&emsp; statusCode: Int, <br>&emsp; message: String, <br>&emsp; oauth: Object (gồm các thuộc tính: token, createAt, expired, isLongAlive)<br> }, <br> error = { <br>&emsp; errorCode: Int, <br>&emsp; message: String <br> } |
+| • Request API: <br> `GraphModule.sendRequest(method, endpoint, token, params, callback)` | • method: MethodRequest(MethodRequest.POST, MethodRequest.GET,...) <br> • resource-path: đường dẫn tài nguyên của URL: "call/find", "call/findone",... <br> • token: access token <br> • params: data body dạng object như { offset: 0, limit: 25 } <br> • callbacks = { <br>&emsp; success:(statusCode, message, jsonObject), <br>&emsp; error:(errorCode, message) <br> } | success = { <br>&emsp; statusCode: Int, <br>&emsp; message: String, <br>&emsp; jsonObject: Object (kết quả response dạng json object)<br> }, <br> error = { <br>&emsp; errorCode: Int, <br>&emsp; message: String <br> } |
+| • Lấy data object: <br> `GraphModule.getData(jsonObject)` | jsonObject: kết quả response | object: Object (gồm các thuộc tính được mô tả ở dữ liệu trả về trong docs https://docs-sdk.voip24h.vn/ |
+| • Lấy danh sách data object: <br> `GraphModule.getListData(jsonObject)` | jsonObject: kết quả response | object: Object (mỗi object gồm các thuộc tính được mô tả ở dữ liệu trả về trong docs https://docs-sdk.voip24h.vn/) |
 
 ## License
 ```
