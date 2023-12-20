@@ -179,8 +179,21 @@ React.useEffect(() => {
 }, []);
 ```
 ## Push Notification
-- Android
-  + Chúng tôi sử dụng Firebase Cloud Messaging (FCM) cho Push Notification. Vì vậy, bạn phải tạo dự án Cloud Messaging trong bảng điều khiển Firebase. Để tạo một dự án Cloud Messaging trong FireBase, đi đến trang https://console.firebase.google.com/
+- Android: Chúng tôi sử dụng Firebase Cloud Messaging (FCM) cho Push Notification
+  + Tạo API Token
+  	- Step 1: Tạo dự án trong bảng điều khiển [Firebase](https://console.firebase.google.com/)
+	- Step 2: Đăng kí app Android
+  	- Step 3: Download file google-services.json và thêm Firebase SDK vào project app của bạn
+	- Step 4: Trong Project settings Firebase, generate token Cloud Messaging API (Legacy) và submit token này cho Voip24h cấu hình
+  + Cấu hình project app của bạn để nhận Push notification: chúng tôi khuyến khích bạn sử dụng thư viện [React Native Firebase](https://rnfirebase.io/)
+  	- Step 1: NPM
+	```bash
+  	$ npm install --save @react-native-firebase/app
+  	$ npm install --save @react-native-firebase/messaging
+ 	```
+  	Follow theo docs [React Native Firebase](https://rnfirebase.io/) để cấu hình project app của bạn
+  	- Step 2:
+
  
 - IOS
 
