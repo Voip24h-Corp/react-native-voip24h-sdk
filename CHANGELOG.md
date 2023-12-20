@@ -24,3 +24,5 @@ var sipConfiguration = new SipConfigurationBuilder('extension','password','ip')
 
 SipModule.registerSipAccount(sipConfiguration)
 ```
+
+- Thêm tính năng Push Notificaion
