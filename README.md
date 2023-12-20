@@ -181,18 +181,38 @@ React.useEffect(() => {
 ## Push Notification
 - Android: Chúng tôi sử dụng Firebase Cloud Messaging (FCM) cho Push Notification
   + Tạo API Token
-  	- Step 1: Tạo dự án trong bảng điều khiển [Firebase](https://console.firebase.google.com/)
-	- Step 2: Đăng kí app Android
-  	- Step 3: Download file google-services.json và thêm Firebase SDK vào project app của bạn
-	- Step 4: Trong Project settings Firebase, generate token Cloud Messaging API (Legacy) và submit token này cho Voip24h cấu hình
-  + Cấu hình project app của bạn để nhận Push notification: chúng tôi khuyến khích bạn sử dụng thư viện [React Native Firebase](https://rnfirebase.io/)
+  	- Step 1: Tạo dự án trong bảng điều khiển [Firebase](https://console.firebase.google.com/) \
+  		![1](/assets/1.png)
+	- Step 2: Đăng kí app Android \
+  		![2](/assets/2.png)
+  	- Step 3: Download file google-services.json và thêm Firebase SDK vào project app của bạn \
+  		![3](/assets/3.png)
+	- Step 4: Trong Project settings Firebase, generate token Cloud Messaging API (Legacy) và submit token này cho [Voip24h](https://voip24h.vn/) cấu hình \
+  		![4](/assets/4.png)
+  + Cấu hình project app của bạn để nhận Push notification: chúng tôi khuyến khích bạn sử dụng thư viện [React Native Firebase](https://rnfirebase.io/messaging/usage)
   	- Step 1: NPM
 	```bash
   	$ npm install --save @react-native-firebase/app
   	$ npm install --save @react-native-firebase/messaging
  	```
-  	Follow theo docs [React Native Firebase](https://rnfirebase.io/) để cấu hình project app của bạn
-  	- Step 2:
+  	> Follow theo docs [React Native Firebase](https://rnfirebase.io/messaging/usage) để cấu hình project app của bạn
+  	- Step 2: Khi khởi động ứng dụng [React Native Firebase](https://rnfirebase.io/messaging/usage) sẽ tạo mã thông báo đăng kí cho ứng dụng khách. Sử dụng mã này để đăng kí lên server [Voip24h](https://voip24h.vn/)
+  	```
+   	import messaging from '@react-native-firebase/messaging'
+   
+   	...
+   	await messaging().registerDeviceForRemoteMessages()
+    	const token = await messaging().getToken()
+
+	// tokenGraph: là access token được generate từ cổng Graph
+   	PushNotificationModule.registerPushNotification(tokenGraph, token, sipConfiguration, Platform.OS, packageId, true, uniqueId)
+   	    .then(response => {
+   	        console.log(response.data)
+	    }).catch(error => {
+   	        console.log(error.response.data.message)
+	    })
+   	```
+  
 
  
 - IOS
