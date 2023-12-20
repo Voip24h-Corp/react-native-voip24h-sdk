@@ -112,30 +112,12 @@ import { GraphModule, SipModule, MethodRequest } from 'react-native-voip24h-sdk'
 ```
 
 ## CallKit
-#### - Thay đổi v1.0.2
-- Loại bỏ cơ chế init module:
-  > ~~SipModule.initializeModule()~~
-- Loại bỏ cơ chế Login SIP bằng 3 tham số:
-  > ~~SipModule.registerSipAccount("extension", "password", "IP")~~
-- Cơ chế Login SIP mới:
-```
-import { TransportType, SipConfigurationBuilder } from 'react-native-voip24h-sdk'
-
-var sipConfiguration = new SipConfigurationBuilder('extension','password','ip')
-	.setPort(port) // (optional)
-	.setTransportType(TransportType.Udp) // Udp, Tcp, Tls, Dtls (optional)
-	.setKeepAlive(true) // (optional)
-	.build()
-
-SipModule.registerSipAccount(sipConfiguration)
-```
-> Note: v1.0.1 vẫn sử dụng phương thức cũ
-
+#### - Thay đổi: [CHANGELOG.md](CHANGELOG.md)
 #### - Tính năng
 | <div style="text-align: center">Phương thức và tham số</div> | Kết quả trả về và thuộc tính | <div style="text-align: center">Ví dụ<div> |
 | :----------------------------------------------------------- | :--------------------------: | :-----------------------------------------: |
-| • Khởi tạo: (v1.0.2 không còn hỗ trợ) <br> `initializeModule()` | None | `SipModule.initializeModule()` |
-| • Login SIP: (v1.0.2 không còn hỗ trợ) <br> `registerSipAccount(String, String, String)` | None | `SipModule.registerSipAccount("extension", "password", "IP")` |
+| • Khởi tạo: <br> `initializeModule()` | None | `SipModule.initializeModule()` |
+| • Login SIP: <br> `registerSipAccount(String, String, String)` | None | `SipModule.registerSipAccount("extension", "password", "IP")` |
 | • Trạng thái đăng kí SIP: <br> `getSipRegistrationState()` | state: string <br> error: string | `SipModule.getSipRegistrationState().then(state => {}).catch(error => {})` |
 | • Logout SIP: <br> `unregisterSipAccount()` | None | `SipModule.unregisterSipAccount()` |
 | • Refresh kết nối SIP: <br> `refreshRegisterSipAccount()` | None | `SipModule.refreshRegisterSipAccount()` |
