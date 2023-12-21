@@ -285,7 +285,8 @@ React.useEffect(() => {
     npm i react-native-voip-push-notification
     npm i react-native-callkeep
     ```
-    - Tại project của bạn thêm Push Notifications và tích chọn Voice over IP (Background Modes) trong Capabilities
+    - Tại project của bạn thêm Push Notifications và tích chọn Voice over IP, Background fetch, Remote notifications, Background processing (Background Modes) trong Capabilities.
+    ![5](/assets/5.png) ![6](/assets/6.png)
     - Khi khởi động ứng dụng [react-native-voip-push-notification](https://www.npmjs.com/package/react-native-voip-push-notification) sẽ tạo mã thông báo đăng kí cho ứng dụng khách. Sử dụng mã này để đăng kí lên server [Voip24h](https://voip24h.vn/)
     ```
     // App.js
@@ -296,14 +297,14 @@ React.useEffect(() => {
 
     VoipPushNotification.addEventListener('register', (token) => {
     
-	// tokenGraph: access token được generate từ API Graph
-        // token: token device pushkit
-	// sipConfiguration: thông số sip khi đăng kí máy nhánh
-	// os: Platform.OS (android/ios)
-	// bundleId: bundle id của ios
-	// isProduction: true(production) / false(dev)
-	// uniqueId: device mac
-
+		// tokenGraph: access token được generate từ API Graph
+	        // token: token device pushkit
+		// sipConfiguration: thông số sip khi đăng kí máy nhánh
+		// os: Platform.OS (android/ios)
+		// bundleId: bundle id của ios
+		// isProduction: true(production) / false(dev)
+		// uniqueId: device mac
+	
       	PushNotificationModule.registerPushNotification(tokenGraph, token, sipConfiguration, os, bundleId, true, uniqueId)
     	    .then(response => {
     	        console.log(response.data)
@@ -313,7 +314,93 @@ React.useEffect(() => {
     })
     VoipPushNotification.registerVoipToken()
     ```
-    - 
+    - Đăng kí nhận thông báo đẩy từ Voip24h Server
+    ```
+    // App.js
+    
+    React.useEffect(() => {
+        ...
+	    // Push Notification
+	    if(Platform.OS === 'ios') {
+	        const options = {
+	            ios: {
+	                appName: 'example',
+	            }
+	        }
+	        RNCallKeep.setup(options)
+	        RNCallKeep.addEventListener('answerCall', ({callUUID}) => {
+	            console.log("accept: " + callUUID)
+	            AcceptCall()
+	        })
+	        RNCallKeep.addEventListener('endCall', ({callUUID}) => {
+	            console.log("endCall: " + callUUID + " - " + appState.current)
+	            if(appState.current.match(/inactive|background/)) {
+	                Hangup()
+	            } else {
+	                Decline()
+	            }
+	        })
+	        VoipPushNotification.addEventListener('notification', (notification) => {
+	            console.log('Message handled in the background!', notification)
+	            callId = notification.uuid
+	            Login()
+	        })
+	    }
+	    ...
+	    return () => {
+	        ...
+	        RNCallKeep.removeEventListener('answerCall')
+	        RNCallKeep.removeEventListener('endCall')
+	        callId = ''
+	    }
+	}, [])
+    ```
+    - Cấu hình ở project ios native
+    ```
+    // AppDelegate.mm
+    
+    #import <PushKit/PushKit.h>
+    #import "RNVoipPushNotificationManager.h"
+    #import "RNCallKeep.h"
+    #import "Payload.h"
+
+    - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+	{
+ 	  ...
+	  [RNVoipPushNotificationManager voipRegistration];
+	  ...
+	}
+ 
+    ....
+    
+    - (void)pushRegistry:(PKPushRegistry *)registry didUpdatePushCredentials:(PKPushCredentials *)credentials forType:(PKPushType)type {
+	  [RNVoipPushNotificationManager didUpdatePushCredentials:credentials forType:(NSString *)type];
+	}
+ 
+    - (void)pushRegistry:(PKPushRegistry *)registry didReceiveIncomingPushWithPayload:(PKPushPayload *)payload forType:(PKPushType)type withCompletionHandler:(void (^)(void))completion {
+    
+	  NSLog(@"didReceiveIncomingPushWithPayload: %@", payload.dictionaryPayload);
+	  
+	  NSString *fromNumber = payload.dictionaryPayload[@"from_number"];
+	  NSString *toNumber = payload.dictionaryPayload[@"to_number"];
+	  NSString *uuid = [[NSUUID UUID] UUIDString];
+	  
+	  NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+	  [dict setObject:[uuid lowercaseString] forKey:@"uuid"];
+	  [dict setObject:fromNumber forKey:@"from_number"];
+	  [dict setObject:toNumber forKey:@"to_number"];
+	  
+	  PushPayload *customPayload = [[PushPayload alloc] init];
+	  customPayload.customDictionaryPayload = dict;
+	  
+	  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+	    [RNVoipPushNotificationManager didReceiveIncomingPushWithPayload:customPayload forType:(NSString *)type];
+	  });
+	  
+	  [RNCallKeep reportNewIncomingCall:uuid handle:@"example" handleType:@"generic" hasVideo:false localizedCallerName:fromNumber supportsHolding:false supportsDTMF:false supportsGrouping:false supportsUngrouping:false fromPushKit:true payload:nil withCompletionHandler:completion];
+	  completion();
+	}
+    ```
 
 ## Graph
 > • key và security certificate(secert) do `Voip24h` cung cấp
