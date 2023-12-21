@@ -42,7 +42,7 @@
 ## Cài đặt
 #### Step 1: NPM:
 ```bash
-$ npm install react-native-voip24h-sdk
+npm install react-native-voip24h-sdk
 ```
 #### Step 2: Linking module:
 - Android: 
@@ -97,8 +97,8 @@ $ npm install react-native-voip24h-sdk
         ```
     - Trong folder `ios` mở terminal, nhập dòng lệnh:
         ```bash
-        $ rm -rf Pods/
-        $ pod install
+        rm -rf Pods/
+        pod install
         ```
     > Note: Từ react-native vesion > 0.63.0. Nếu build app trên platform ios mà bị lỗi Swift Compiler error: folly/folly-config.h not found -> Could not build Objective-C module 'linphone'.
     <br> • Fix: Trong file Pods/RCT-Folly/folly/portability/Config.h, comment dòng #include <folly/folly-config.h>
@@ -180,24 +180,24 @@ React.useEffect(() => {
 ```
 ## Push Notification
 - Android: Chúng tôi sử dụng Firebase Cloud Messaging (FCM) cho thông báo đẩy cuộc gọi đến khi app ở trạng thái background
-  + Tạo API Token
-  	- Step 1: Tạo dự án trong bảng điều khiển [Firebase](https://console.firebase.google.com/) \
+  + Step 1: Tạo API Token
+  	- Tạo dự án trong bảng điều khiển [Firebase](https://console.firebase.google.com/) \
   		![1](/assets/1.png)
-	- Step 2: Đăng kí app Android \
+	- Đăng kí app Android \
   		![2](/assets/2.png)
-  	- Step 3: Download file google-services.json và thêm Firebase SDK vào project app của bạn \
+  	- Download file google-services.json và thêm Firebase SDK vào project app của bạn \
   		![3](/assets/3.png)
-	- Step 4: Trong Project settings Firebase, tạo token Cloud Messaging API (Legacy) và submit token này cho [Voip24h](https://voip24h.vn/) cấu hình \
+	- Trong Project settings Firebase, tạo token Cloud Messaging API (Legacy) và submit token này cho [Voip24h](https://voip24h.vn/) cấu hình \
   		![4](/assets/4.png)
-  + Cấu hình project app của bạn để nhận thông báo đẩy cuộc gọi đến -> chúng tôi khuyến khích bạn sử dụng thư viện [React Native Firebase](https://rnfirebase.io/messaging/usage)
-  	- Step 1: NPM
+  + Step 2: Cấu hình project app của bạn để nhận thông báo đẩy cuộc gọi đến -> chúng tôi khuyến khích bạn sử dụng thư viện [React Native Firebase](https://rnfirebase.io/messaging/usage)
+  	- NPM
 	```bash
-  	$ npm install --save @react-native-firebase/app
-  	$ npm install --save @react-native-firebase/messaging
+  	npm install --save @react-native-firebase/app
+  	npm install --save @react-native-firebase/messaging
  	```
   	> Theo dõi docs [React Native Firebase](https://rnfirebase.io/messaging/usage) để cấu hình project app của bạn
    
-  	- Step 2: Khi khởi động ứng dụng [React Native Firebase](https://rnfirebase.io/messaging/usage) sẽ tạo mã thông báo đăng kí cho ứng dụng khách. Sử dụng mã này để đăng kí lên server [Voip24h](https://voip24h.vn/)
+  	- Khi khởi động ứng dụng [React Native Firebase](https://rnfirebase.io/messaging/usage) sẽ tạo mã thông báo đăng kí cho ứng dụng khách. Sử dụng mã này để đăng kí lên server [Voip24h](https://voip24h.vn/)
   	```
    	// App.js
    
@@ -228,7 +228,7 @@ React.useEffect(() => {
   	> - Chúng tôi khuyến khích sử dụng thư viện [react-native-device-info](https://www.npmjs.com/package/react-native-device-info) để lấy mã device mac và package id
    	> - Phiên bản từ Android 13 (SDK 32) trở đi sẽ yêu cầu quyền thông báo để nhận Push Notification https://developer.android.com/develop/ui/views/notifications/notification-permission
    
-	- Step 3: Để nhận được thông báo đẩy khi app ở trạng thái background, cần xử lý bên ngoài logic ứng dụng cụ thể trong your-project/index.js. Khi nhận thông báo đẩy, vui lòng đăng kí lại máy nhánh để nhận tín hiệu cuộc gọi đến
+	- Để nhận được thông báo đẩy khi app ở trạng thái background, cần xử lý bên ngoài logic ứng dụng cụ thể trong your-project/index.js. Khi nhận thông báo đẩy, vui lòng đăng kí lại máy nhánh để nhận tín hiệu cuộc gọi đến
   	```
    	// index.js
    
@@ -256,7 +256,7 @@ React.useEffect(() => {
 	    SipModule.registerSipAccount(sipConfiguration)
 	}
    	```
-	- Step 4: Để huỷ đăng kí nhận Push Notification
+	- Để huỷ đăng kí nhận Push Notification
 	```
   	// App.js
   
@@ -274,7 +274,46 @@ React.useEffect(() => {
   	    })
   	```
  
-- IOS
+- IOS: Chúng tôi sử dụng Apple Push Notification service (APNs) cho thông báo đẩy cuộc gọi đến khi app ở trạng thái background
+  + Step 1: Tạo APNs Auth Key
+  + Step 2: Cấu hình project app của bạn để nhận thông báo đẩy cuộc gọi đến -> Từ IOS 10 trở lên, sử dụng CallKit + PushKit
+    > - [Callkit](https://developer.apple.com/documentation/callkit/) cho phép hiển thị giao diện cuộc gọi hệ thống cho các dịch vụ VoIP trong ứng dụng của bạn và điều phối dịch vụ gọi điện của bạn với các ứng dụng và hệ thống khác.
+    > - [PushKit](https://developer.apple.com/documentation/pushkit) hỗ trợ các thông báo chuyên biệt để nhận các cuộc gọi Thoại qua IP (VoIP) đến.
+    
+    - Để sử dụng CallKit Framework + PushKit FrameWork, chúng tôi khuyến khích sử dụng thư viện [react-native-callkeep](https://www.npmjs.com/package/react-native-callkeep) và [react-native-voip-push-notification](https://www.npmjs.com/package/react-native-voip-push-notification)
+    ```bash
+    npm i react-native-voip-push-notification
+    npm i react-native-callkeep
+    ```
+    - Tại project của bạn thêm Push Notifications và tích chọn Voice over IP (Background Modes) trong Capabilities
+    - Khi khởi động ứng dụng [react-native-voip-push-notification](https://www.npmjs.com/package/react-native-voip-push-notification) sẽ tạo mã thông báo đăng kí cho ứng dụng khách. Sử dụng mã này để đăng kí lên server [Voip24h](https://voip24h.vn/)
+    ```
+    // App.js
+    
+    import VoipPushNotification from "react-native-voip-push-notification"
+
+    ...
+
+    VoipPushNotification.addEventListener('register', (token) => {
+    
+	// tokenGraph: access token được generate từ API Graph
+        // token: token device pushkit
+	// sipConfiguration: thông số sip khi đăng kí máy nhánh
+	// os: Platform.OS (android/ios)
+	// bundleId: bundle id của ios
+	// isProduction: true(production) / false(dev)
+	// uniqueId: device mac
+
+      	PushNotificationModule.registerPushNotification(tokenGraph, token, sipConfiguration, os, bundleId, true, uniqueId)
+    	    .then(response => {
+    	        console.log(response.data)
+    	    }).catch(error => {
+    		console.log(error.response.data.message)
+    	    })
+    })
+    VoipPushNotification.registerVoipToken()
+    ```
+    - 
 
 ## Graph
 > • key và security certificate(secert) do `Voip24h` cung cấp
