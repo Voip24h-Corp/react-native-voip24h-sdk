@@ -417,6 +417,23 @@ React.useEffect(() => {
 	  completion();
 	}
     ```
+    - Để huỷ đăng kí nhận Push Notification
+    ```
+    // App.js
+    
+    import { PushNotificationModule } from 'react-native-voip24h-sdk'
+
+    // sipConfiguration: thông số sip khi đăng kí máy nhánh
+    // os: Platform.OS (android/ios)
+    // packageId: package id của android / bundle id của ios
+
+    PushNotificationModule.unregisterPushNotification(sipConfiguration, os, packageId)
+    	.then(response => {
+    	    console.log(response.data)
+    	}).catch(error => {
+    	    console.log(error.response.data.message)
+    	})
+    ```
 
 ## Graph
 > • key và security certificate(secert) do `Voip24h` cung cấp
