@@ -225,9 +225,9 @@ React.useEffect(() => {
    	        console.log(error.response.data.message)
 	    })
    	```
-  	> - Chúng tôi khuyến khích sử dụng thư viện [react-native-device-info](https://www.npmjs.com/package/react-native-device-info) để lấy mã device mac và package id
-   	> - Phiên bản từ Android 13 (SDK 32) trở đi sẽ yêu cầu quyền thông báo để nhận Push Notification https://developer.android.com/develop/ui/views/notifications/notification-permission
-   
+  	> Chúng tôi khuyến khích sử dụng thư viện [react-native-device-info](https://www.npmjs.com/package/react-native-device-info) để lấy mã device mac và package id
+   	
+   	- Phiên bản từ Android 13 (SDK 32) trở đi sẽ yêu cầu quyền thông báo để nhận Push Notification https://developer.android.com/develop/ui/views/notifications/notification-permission. Vui lòng cấp quyền runtime POST_NOTIFICATIONS trước khi sử dụng
 	- Để nhận được thông báo đẩy khi app ở trạng thái background, cần xử lý bên ngoài logic ứng dụng cụ thể trong your-project/index.js. Khi nhận thông báo đẩy, vui lòng đăng kí lại máy nhánh để nhận tín hiệu cuộc gọi đến
   	```
    	// index.js
@@ -284,6 +284,9 @@ React.useEffect(() => {
     ```bash
     npm i react-native-voip-push-notification
     npm i react-native-callkeep
+
+    cd ios
+    pod install
     ```
     - Tại project của bạn thêm Push Notifications và tích chọn Voice over IP, Background fetch, Remote notifications, Background processing (Background Modes) trong Capabilities.
     ![5](/assets/5.png) ![6](/assets/6.png)
@@ -292,6 +295,7 @@ React.useEffect(() => {
     // App.js
     
     import VoipPushNotification from "react-native-voip-push-notification"
+    import { requestNotifications } from 'react-native-permissions'
 
     ...
 
@@ -314,9 +318,21 @@ React.useEffect(() => {
     })
     VoipPushNotification.registerVoipToken()
     ```
+    > Chúng tôi khuyến khích sử dụng thư viện [react-native-device-info](https://www.npmjs.com/package/react-native-device-info) để lấy mã device mac và bundle id
+ 
+    - Cấp quyền thông báo trên ios
+    ```
+    // App.js
+    
+    import { requestNotifications } from 'react-native-permissions'
+
+    requestNotifications(['alert', 'sound']).then(({status, settings}) => {})
+    ```
     - Đăng kí nhận thông báo đẩy từ Voip24h Server
     ```
     // App.js
+    import RNCallKeep from 'react-native-callkeep'
+    import VoipPushNotification from "react-native-voip-push-notification"
     
     React.useEffect(() => {
         ...
