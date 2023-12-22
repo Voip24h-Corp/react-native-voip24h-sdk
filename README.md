@@ -276,6 +276,11 @@ React.useEffect(() => {
  
 - IOS: Chúng tôi sử dụng Apple Push Notification service (APNs) cho thông báo đẩy cuộc gọi đến khi app ở trạng thái background
   + Step 1: Tạo APNs Auth Key
+    - Truy cập [Apple Developer](https://developer.apple.com/account/resources/certificates/list) để tạo Certificates
+    
+    - 
+   
+      
   + Step 2: Cấu hình project app của bạn để nhận thông báo đẩy cuộc gọi đến -> Từ IOS 10 trở lên, sử dụng CallKit + PushKit
     > - [Callkit](https://developer.apple.com/documentation/callkit/) cho phép hiển thị giao diện cuộc gọi hệ thống cho các dịch vụ VoIP trong ứng dụng của bạn và điều phối dịch vụ gọi điện của bạn với các ứng dụng và hệ thống khác.
     > - [PushKit](https://developer.apple.com/documentation/pushkit) hỗ trợ các thông báo chuyên biệt để nhận các cuộc gọi Thoại qua IP (VoIP) đến.
