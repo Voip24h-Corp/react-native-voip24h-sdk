@@ -15,7 +15,7 @@ const PushNotificationModule = {
                 "device_os": platform,
                 "device_mac": deviceMac,
                 "voip_token": tokenDevice,
-                "env": ENV.prod,
+                "env": env,
                 "app_id": packageId,
                 "is_new": true,
                 "is_active": true,
