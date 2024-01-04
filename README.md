@@ -250,6 +250,7 @@ React.useEffect(() => {
     requestNotifications(['alert', 'sound']).then(({status, settings}) => {})
     ```
     - Đăng kí nhận thông báo đẩy từ Voip24h Server
+    > • Important Note: Sau khi nhận thông báo đẩy từ Voip24h Server, như đã đề cập cơ chế [Callkit](https://developer.apple.com/documentation/callkit/), [PushKit](https://developer.apple.com/documentation/pushkit) ở trên thì phải hiển thị màn hình cuộc gọi của hệ thống (cuộc gọi giả) trước, thực thi Login lại máy nhánh ngay sau đó để nhận tín hiệu cuộc gọi thật từ Voip24h thông qua bản tin event Ring, lúc này mọi action call như answer/reject mới hoạt động.
     ```
     // App.js
     import RNCallKeep from 'react-native-callkeep'
