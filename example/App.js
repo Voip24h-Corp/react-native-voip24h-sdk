@@ -72,8 +72,8 @@ const Section = ({children, title}): Node => {
   )
 }
 
-const key = 'c3a80157b2852e9bdbe80e1260b5a6fc645fb77b'
-const secert = '8a2a1c20bf4abe3fb1ed29a3cd1d449af3dd58ad'
+const key = 'c3axxxxxxxxxxxxxxxxxxx'
+const secert = '8a2xxxxxxxxxxxxxxxxx'
 let callId = ''
 let tokenGraph = ''
 
