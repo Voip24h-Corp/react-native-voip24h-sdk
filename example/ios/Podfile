@@ -47,9 +47,6 @@ target 'example' do
   # Note that if you have use_frameworks! enabled, Flipper will not work and
   # you should disable the next line.
   # use_flipper!()
-  pod 'react-native-voip24h-sdk', :path => '../react-native-voip24h-sdk'
-  pod 'linphone-sdk-novideo', :podspec => '../react-native-voip24h-sdk/third_party_podspecs/linphone-sdk-novideo.podspec'
-  # pod 'linphone-sdk-novideo', :podspec => '../node_modules/react-native-voip24h-sdk/third_party_podspecs/linphone-sdk-novideo.podspec'
   # post_install do |installer|
   #   react_native_post_install(installer)
   #   __apply_Xcode_12_5_M1_post_install_workaround(installer)

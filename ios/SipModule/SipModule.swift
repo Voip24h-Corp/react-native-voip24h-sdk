@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import linphonesw
 
 class SipModule {
     
@@ -544,5 +543,16 @@ class SipModule {
         let currentAudioDevice = mCore.currentCall?.outputAudioDevice
         let speakerEnabled = currentAudioDevice?.type == AudioDeviceType.Speaker
         resolve(speakerEnabled)
+    }
+    
+    func setCodecs(codec: String, isEnable: Bool, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        let payload = mCore.audioPayloadTypes.first { $0.mimeType.caseInsensitiveCompare(codec) == .orderedSame }
+        if payload == nil {
+            NSLog("Invalid codec")
+            reject("Set codecs", "Codec not found", nil)
+        } else {
+            let _ = payload!.enable(enabled: isEnable)
+            resolve("Set codecs successful")
+        }
     }
 }

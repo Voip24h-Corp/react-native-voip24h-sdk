@@ -13,9 +13,9 @@ class SipConfiguration {
 
 export default class SipConfigurationBuilder {
 
-    port: int = 5060;
-    transport: TransportType = TransportType.Udp;
-    isKeepAlive: bool = false;
+    port = 5060;
+    transport = TransportType.Udp;
+    isKeepAlive = false;
 
     constructor(extension = "", password = "", domain = "") {
         this.extension = extension;

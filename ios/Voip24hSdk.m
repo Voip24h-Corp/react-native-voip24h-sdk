@@ -64,4 +64,9 @@ RCT_EXTERN_METHOD(isMicEnabled:(RCTPromiseResolveBlock)resolve
 RCT_EXTERN_METHOD(isSpeakerEnabled:(RCTPromiseResolveBlock)resolve
                   withRejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(setCodecs:(NSString *)codecs
+                  withEnable:(BOOL)isEnable
+                  withResolve:(RCTPromiseResolveBlock)resolve
+                  withRejecter:(RCTPromiseRejectBlock)reject)
+
 @end

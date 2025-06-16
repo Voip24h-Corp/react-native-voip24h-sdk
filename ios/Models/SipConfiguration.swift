@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import linphonesw
 
 struct SipConfiguration: Codable {
     var ext: String = ""

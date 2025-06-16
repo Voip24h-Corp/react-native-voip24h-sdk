@@ -1,74 +1,71 @@
 import axios from 'axios';
-import type  { AccessTokenEventCallback, RequestEventCallback } from './callback/GraphEventCallback';
 import OAuth from './model/OAuth';
-import { URL } from './utils/Constant';
+
+const URL = {
+    GRAPH: "https://api.voip24h.vn/v3/", // http://graph.voip24h.vn/
+    GRAPH_TOKEN: "https://api.voip24h.vn/v3/authentication/" // http://auth2.voip24h.vn/api/token
+}
 
 const GraphModule = {
-    getAccessToken: function(
-        apiKey: string, 
-        apiSecert: string, 
-        callback: AccessTokenEventCallback
-    ) {
-        axios.post(URL.GRAPH_TOKEN, {
-            api_key: apiKey,
-            api_secert: apiSecert
-        })
+    getAccessToken: function(apiKey, apiSecret, isLongLive, callback) {
+        axios.post(URL.GRAPH_TOKEN, { apiKey, apiSecret, isLongLive })
         .then(response => {
             var responseObj = response.data;
-            if(responseObj.data.response.data !== null) {
-                var responseData = responseObj.data.response;
-                var oauth = new OAuth(responseData.data.IsToken, responseData.data.Createat, responseData.data.Expried, responseData.data.IsLonglive);
+            // console.log("getAccessToken response: ", responseObj.message)
+            if(responseObj.data !== null) {
+                var responseData = responseObj.data;
+                var oauth = new OAuth(responseData.token, responseData.createAt, responseData.expired, responseData.isLongLive);
                 callback.success(responseData.status, responseData.message, oauth);
                 return
             }
-            callback.error(responseObj.data.response.status, responseObj.data.response.message);
+            callback.error(responseObj.status, responseObj.message);
         })
         .catch(error => {
             callback.error(error.response.status, error.message);
         });
     },
 
-    sendRequest: function(
-        method: string, 
-        endpoint: string, 
-        token: string,
-        params: object,
-        callback: RequestEventCallback
-    ) {
-        axios({
+    sendRequest: function(method, endpoint, token, params, callback) {
+        const config = {
             method: method,
             url: URL.GRAPH + endpoint,
-            headers: { Authorization: `Bearer ${token}` },
-            data: params
-        })
+            headers: { Authorization: `Bearer ${token}` }
+        }
+        if (config.method === 'get') {
+            config.params = params
+        } else {
+            config.data = params
+        }
+        axios(config)
         .then(response => {
             var responseObj = response.data;
-            if(responseObj.data.response.data !== null) {
-                var responseData = responseObj.data.response;
-                if(responseData.data.data !== undefined) { // case: json media record
-                    callback.success(responseData.status, responseData.message, responseData.data.data);
-                    return
-                }
-                callback.success(responseData.status, responseData.message, responseData.data);
+            // console.log("sendRequest response: ", responseObj)
+            if(responseObj.data !== null) {
+                // var responseData = responseObj.data
+                // if(responseData.data !== undefined) { // case: json media record
+                //     callback.success(responseData.status, responseData.message, responseData.data.data);
+                //     return
+                // }
+                // console.log("sendRequest response data: ", responseData)
+                callback.success(responseObj.status, responseObj.message, responseObj)
                 return
             }
-            callback.error(responseObj.data.response.status, responseObj.data.response.message);
+            callback.error(responseObj.status, responseObj.message);
         })
         .catch(error => {
             console.log(error);
             callback.error(error.response.status, error.message);
         });
     },
+    // getData: function(jsonObject) {
+    //     var data = Object.assign({}, jsonObject);
+    //     return data;
+    // },
 
-    getData: function(jsonObject: object) {
-        var data = Object.assign({}, jsonObject);
-        return data;
-    },
-
-    getListData: function(jsonObject: object) {
-        var dataList = Object.assign([], jsonObject);
-        return dataList;
-    }
+    // getListData: function(jsonObject) {
+    //     var dataList = Object.assign([], jsonObject);
+    //     return dataList;
+    // }
 }
 
 export default GraphModule;

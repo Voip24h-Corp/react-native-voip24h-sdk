@@ -29,7 +29,8 @@ class Voip24hSdkModule(private val reactContext: ReactApplicationContext) :
     @ReactMethod
     fun registerSipAccount(data: ReadableMap) {
         try {
-            val sipConfiguration = Gson().fromJson(data.toHashMap().toString(), SipConfiguration::class.java)
+            val json = Gson().toJson(data.toHashMap())
+            val sipConfiguration = Gson().fromJson(json, SipConfiguration::class.java)
             Log.d(TAG, sipConfiguration.toString())
             sipModule.registerSipAccount(sipConfiguration)
         } catch (e: Exception) {
@@ -87,6 +88,9 @@ class Voip24hSdkModule(private val reactContext: ReactApplicationContext) :
 
     @ReactMethod
     fun isSpeakerEnabled(promise: Promise) = sipModule.isSpeakerEnabled(promise)
+
+    @ReactMethod
+    fun setCodecs(codecs: String, isEnable: Boolean, promise: Promise) = sipModule.setCodecs(codecs, isEnable, promise)
 
     @ReactMethod
     fun addListener(eventName: String?) {

@@ -1,7 +1,7 @@
 {
   "name": "react-native-voip24h-sdk",
   "title": "React Native Voip24h Sdk",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "TODO",
   "main": "index.js",
   "files": [
@@ -10,8 +10,7 @@
     "index.js",
     "ios",
     "src",
-    "react-native-voip24h-sdk.podspec",
-    "third_party_podspecs/linphone-sdk-novideo.podspec"
+    "react-native-voip24h-sdk.podspec"
   ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -25,8 +24,8 @@
     "react-native"
   ],
   "author": {
-    "name": "Tấn Phát",
-    "email": "nguyentanphat.12041998@gmail.com"
+    "name": "Phát Nguyễn",
+    "email": "phat.nguyen@voip24h.vn"
   },
   "license": "MIT",
   "licenseFilename": "LICENSE",
@@ -40,6 +39,7 @@
     "react-native": "^0.68.2"
   },
   "dependencies": {
+    "@babel/runtime": "^7.27.3",
     "axios": "^1.6.2",
     "user": "^0.0.0"
   }

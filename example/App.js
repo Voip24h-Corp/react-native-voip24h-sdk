@@ -31,11 +31,13 @@ import {
 
 import {
   GraphModule,
-  SipModule,
+  CallModule,
   MethodRequest,
   TransportType,
   SipConfigurationBuilder,
   PushNotificationModule,
+  Codecs,
+  GraphRoute
 } from 'react-native-voip24h-sdk'
 
 import messaging from '@react-native-firebase/messaging'
@@ -90,7 +92,7 @@ const App: () => Node = () => {
 
   const fetchToken = async () => {
     return new Promise(function (resolve) {
-      GraphModule.getAccessToken(key, secert, {
+      GraphModule.getAccessToken(key, secert, false, {
         success: (statusCode, message, oauth) => resolve(oauth.token),
         error: (errorCode, message) =>
           console.log(`Error code: ${errorCode}, Message: ${message}`),
@@ -100,8 +102,8 @@ const App: () => Node = () => {
 
   const fetchData = async (token: string, params: object) => {
     return new Promise(function (resolve) {
-      GraphModule.sendRequest(MethodRequest.POST, 'call/find', token, params, {
-        success: (statusCode, message, jsonObject) => resolve(jsonObject),
+      GraphModule.sendRequest(MethodRequest.GET, GraphRoute.Record, token, params, {
+        success: (statusCode, message, data) => resolve(data),
         error: (errorCode, message) =>
           console.log(`Error code: ${errorCode}, Message: ${message}`),
       })
@@ -113,11 +115,8 @@ const App: () => Node = () => {
       offset: 0,
       limit: 10
     }
-    var jsonObject = await fetchData(tokenGraph, jsonRequest)
-    var dataList = GraphModule.getListData(jsonObject)
-    console.log(dataList)
-    // var data = GraphModule.getData(jsonObject);
-    // console.log(data);
+    var data = await fetchData(tokenGraph, jsonRequest)
+    console.log("fetch data: ", data)
   }
 
   const GetToken = async () => {
@@ -126,38 +125,38 @@ const App: () => Node = () => {
   }
 
   var sipConfiguration = new SipConfigurationBuilder(
-    'extension',
-    'password',
-    'ip'
+    "extension",
+    "password",
+    "ip"
   )
-    .setPort(port)
+    .setPort(5060)
     .setTransportType(TransportType.Udp)
     .setKeepAlive(true)
     .build()
 
   const Login = () => {
-    // console.log(sipConfiguration);
-    SipModule.registerSipAccount(sipConfiguration)
+    console.log(sipConfiguration);
+    CallModule.registerSipAccount(sipConfiguration)
   }
 
   const Call = () => {
-    SipModule.call('phone number')
+    CallModule.call('09xxxxxxxxx')
   }
 
   const Hangup = () => {
-    SipModule.hangup()
+    CallModule.hangup()
   }
 
   const AcceptCall = () => {
-    SipModule.acceptCall()
+    CallModule.acceptCall()
   }
 
   const Decline = () => {
-    SipModule.decline()
+    CallModule.decline()
   }
 
   const ToggleMic = () => {
-    SipModule.toggleMic()
+    CallModule.toggleMic()
       .then(result => {
         if (result) console.log('Enabled mic')
         else console.log('Disabled mic')
@@ -166,19 +165,19 @@ const App: () => Node = () => {
   }
 
   const Pause = () => {
-    SipModule.pause()
+    CallModule.pause()
   }
 
   const Resume = () => {
-    SipModule.resume()
+    CallModule.resume()
   }
 
   const Transfer = () => {
-    SipModule.transfer('extension')
+    CallModule.transfer('extension')
   }
 
   const ToggleSpeaker = () => {
-    SipModule.toggleSpeaker()
+    CallModule.toggleSpeaker()
       .then(result => {
         if (result) console.log('Enabled speaker')
         else console.log('Disabled speaker')
@@ -187,49 +186,55 @@ const App: () => Node = () => {
   }
 
   const SendDtmf = () => {
-    SipModule.sendDtmf('number#')
+    CallModule.sendDtmf('number#')
   }
 
   const Logout = () => {
-    SipModule.unregisterSipAccount()
+    CallModule.unregisterSipAccount()
   }
 
   const RefreshRegister = () => {
-    SipModule.refreshRegisterSipAccount()
+    CallModule.refreshRegisterSipAccount()
   }
 
   const GetCallID = () => {
-    SipModule.getCallId()
+    CallModule.getCallId()
       .then(callId => console.log(`Call ID: ${callId}`))
       .catch(error => console.log(error))
   }
 
   const GetSipRegistrationState = () => {
-    SipModule.getSipRegistrationState()
+    CallModule.getSipRegistrationState()
       .then(state => console.log(`State: ${state}`))
       .catch(error => console.log(error))
   }
 
   const GetMissedCall = () => {
-    SipModule.getMissedCalls()
+    CallModule.getMissedCalls()
       .then(state => console.log(`Missed calls: ${state}`))
       .catch(error => console.log(error))
   }
 
   const GetMicEnable = () => {
-    SipModule.isMicEnabled()
+    CallModule.isMicEnabled()
       .then(result => console.log(`Mic enabled: ${result}`))
       .catch(error => console.log(error))
   }
 
   const GetSpeakerEnable = () => {
-    SipModule.isSpeakerEnabled()
+    CallModule.isSpeakerEnabled()
       .then(result => console.log(`Speaker enabled: ${result}`))
       .catch(error => console.log(error))
   }
 
+  const SetCodecs = () => {
+    CallModule.setCodecs(Codecs.G722, true)
+      .then(() => console.log('Set codecs successfully'))
+      .catch(error => console.log(`Error setting codecs: ${error}`))
+  }
+
   // console.log(NativeModules.Voip24hSdk)
-  // SipModule.initializeModule();
+  // CallModule.initializeModule();
   // var sipConfiguration = new SipConfigurationBuilder('extension','password','ip',)
   //   .setPort(port)
   //   .setTransportType(TransportType.Udp)
@@ -300,7 +305,7 @@ const App: () => Node = () => {
       NotificationUtils.observeNotifitionForegroundForAndroid()
     }
 
-    let eventEmitter = new NativeEventEmitter(SipModule)
+    let eventEmitter = new NativeEventEmitter(CallModule)
     const eventListeners = Object.entries(callbacks).map(
       ([event, callback]) => {
         return eventEmitter.addListener(event, callback)
@@ -407,7 +412,8 @@ const App: () => Node = () => {
           <Button onPress={ToggleMic} title='ToggleMic' />
           <Button onPress={ToggleSpeaker} title='ToggleSpeaker' />
           <Button onPress={SendDtmf} title='Send dtmf' />
-          <Button onPress={GetCallID} title='Get CallID' />
+          {/* <Button onPress={GetCallID} title='Get CallID' /> */}
+          <Button onPress={SetCodecs} title='Set codecs G722' />
           <Button onPress={GetMissedCall} title='Get Missed Calls' />
           <Button
             onPress={GetSipRegistrationState}

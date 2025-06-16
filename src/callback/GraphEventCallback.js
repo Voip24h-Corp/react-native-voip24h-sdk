@@ -1,9 +1,14 @@
-export interface AccessTokenEventCallback {
-    success: (statusCode, message, oauth) => void;
-    error: (statusCode, message) => void;
+const AccessTokenEventCallback = {
+    success: (statusCode, message, oauth) => {},
+    error: (statusCode, message) => {}
 }
 
-export interface RequestEventCallback {
-    success: (statusCode, message, jsonObject: object) => void;
-    error: (statusCode, message) => void;
+const RequestEventCallback = {
+    success: (statusCode, message, jsonObject) => {},
+    error: (statusCode, message) => {}
+}
+
+module.exports = {
+    AccessTokenEventCallback,
+    RequestEventCallback
 }

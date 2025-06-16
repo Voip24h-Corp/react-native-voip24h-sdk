@@ -382,6 +382,19 @@ class SipModule(private val reactContext: ReactContext) {
         promise.resolve(speakerEnabled)
     }
 
+    fun setCodecs(codecs: String, isEnable: Boolean, promise: Promise) {
+        try {
+            mCore.audioPayloadTypes.find { it.mimeType.contains(codecs, true) }?.enable(isEnable) ?: kotlin.run {
+                Log.d(TAG, "Invalid codec")
+                promise.reject(Throwable("Codec not found"))
+            }
+            promise.resolve("Set codec $codecs to $isEnable")
+        } catch (e: Exception) {
+            Log.d(TAG, e.message.toString())
+            promise.reject(Throwable(e.message.toString()))
+        }
+    }
+
     private fun isMissed(callLog: CallLog?): Boolean {
         return (callLog?.dir == Call.Dir.Incoming && callLog.status == Call.Status.Missed)
     }

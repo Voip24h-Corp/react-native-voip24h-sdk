@@ -51,13 +51,6 @@ allprojects {
         }
         google()
         maven { url 'https://www.jitpack.io' }
-        maven {
-            name "linphone.org maven repository"
-            url "https://linphone.org/maven_repository/"
-            content {
-                includeGroup "org.linphone.no-video"
-            }
-        }
         exclusiveContent {
             filter {
                 includeGroup "com.facebook.react"
@@ -67,6 +60,9 @@ allprojects {
                     url "$rootDir/../node_modules/react-native/android"
                 }
             }
+        }
+        flatDir {
+            dirs project(':react-native-voip24h-sdk').file('libs')
         }
     }
 }

@@ -12,6 +12,11 @@
 - [Push Notification](#push-notification)
 - [Graph](#graph)
 
+## Thay đổi
+Kể từ version v1.0.3 có thay đổi về tính năng ở CallKit và Graph, vui lòng kiểm tra trong [CHANGELOG.md](CHANGELOG.md)
+
+Version v1.0.2 trở xuống vẫn thực theo tài liệu bên dưới
+
 ## Tính năng
 | Chức năng | Mô tả |
 | --------- | ----- |
@@ -112,7 +117,6 @@ import { GraphModule, SipModule, MethodRequest } from 'react-native-voip24h-sdk'
 ```
 
 ## CallKit
-#### - Thay đổi: [CHANGELOG.md](CHANGELOG.md)
 #### - Tính năng
 | <div style="text-align: center">Phương thức và tham số</div> | Kết quả trả về và thuộc tính | <div style="text-align: center">Ví dụ<div> |
 | :----------------------------------------------------------- | :--------------------------: | :-----------------------------------------: |

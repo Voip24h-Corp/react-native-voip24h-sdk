@@ -1,5 +1,5 @@
 import GraphModule from "./src/GraphModule";
-import { MethodRequest, TransportType } from "./src/enum_type/EnumType";
+import { MethodRequest, TransportType, Codecs, GraphRoute } from "./src/enum_type/EnumType";
 import SipConfigurationBuilder from "./src/model/SipConfiguration";
 import { NativeModules } from 'react-native';
 import PushNotificationModule from "./src/PushNotificationModule";
@@ -10,7 +10,7 @@ const LINKING_ERROR =
   '- You rebuilt the app after installing the package\n' +
   '- You are not using Expo managed workflow\n'
 
-const SipModule = NativeModules.Voip24hSdk
+const CallModule = NativeModules.Voip24hSdk
   ? NativeModules.Voip24hSdk
   : new Proxy(
       {},
@@ -21,4 +21,4 @@ const SipModule = NativeModules.Voip24hSdk
       }
     )
  
-export { GraphModule, MethodRequest, TransportType, SipModule, SipConfigurationBuilder, PushNotificationModule }
+export { GraphModule, MethodRequest, GraphRoute, TransportType, Codecs, CallModule, SipConfigurationBuilder, PushNotificationModule }

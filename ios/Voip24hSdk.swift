@@ -224,6 +224,11 @@ class Voip24hSdk: RCTEventEmitter {
     func isSpeakerEnabled(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         sipModule.isSpeakerEnabled(resolve: resolve, reject: reject)
     }
+    
+    @objc(setCodecs:withEnable:withResolve:withRejecter:)
+    func setCodecs(codec: String, isEnable: Bool, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
+        sipModule.setCodecs(codec: codec, isEnable: isEnable, resolve: resolve, reject: reject)
+    }
 }
 
 //public enum AudioOutputType: String, CaseIterable {

@@ -10,7 +10,7 @@ if dirname == "node_modules"
   parentProject = File.dirname(parentProject)
 end
 puts parentProject
-reactVersion = JSON.parse(File.read(File.join(parentProject, "node_modules", "react-native", "package.json")))["version"]
+reactVersion = JSON.parse(File.read(File.join(parentProject, "react-native-voip24h-sdk/example/node_modules", "react-native", "package.json")))["version"]
 folly_version = '2021.04.26.00'
 boost_compiler_flags = '-Wno-documentation'
 
@@ -36,11 +36,44 @@ Pod::Spec.new do |s|
   s.license      = "MIT"
   # optional - use expanded license entry instead:
   # s.license    = { :type => "MIT", :file => "LICENSE" }
-  s.authors      = { "Your Name" => "yourname@email.com" }
+  s.authors      = { "Phát Nguyễn" => "phat.nguyen@voip24h.vn" }
   s.platforms    = { :ios => "9.0" }
   s.source       = { :git => "https://github.com/github_account/react-native-voip24h-sdk.git", :tag => "#{s.version}" }
   s.source_files = "ios/**/*.{h,c,cc,cpp,m,mm,swift}"
   s.requires_arc = true
+
+  s.prepare_command = <<-CMD
+    curl -O https://dlp.voip24h.vn/voip-callkit.zip
+    unzip -o voip-callkit.zip -d voip-callkit
+  CMD
+
+  s.vendored_frameworks = "voip-callkit/apple-darwin/Frameworks/**"
+  s.pod_target_xcconfig = { 'VALID_ARCHS' => "arm64 armv7 x86_64" }
+
+  s.subspec 'all-frameworks' do |sp|
+    sp.vendored_frameworks = "voip-callkit/apple-darwin/Frameworks/**"
+  end
+
+  s.subspec 'basic-frameworks' do |sp|
+    sp.dependency 'react-native-voip24h-sdk/app-extension'
+    sp.vendored_frameworks = "voip-callkit/apple-darwin/Frameworks/{bctoolbox-ios.framework}"
+  end
+
+  s.subspec 'app-extension' do |sp|
+    sp.vendored_frameworks = "voip-callkit/apple-darwin/Frameworks/{bctoolbox.framework,belcard.framework,belle-sip.framework,belr.framework,lime.framework,linphone.framework,mediastreamer2.framework,msamr.framework,mscodec2.framework,msopenh264.framework,mssilk.framework,mswebrtc.framework,msx264.framework,ortp.framework}"
+  end
+
+  s.subspec 'app-extension-swift' do |sp|
+    sp.source_files = "voip-callkit/apple-darwin/share/linphonesw/*.swift"
+    sp.dependency "react-native-voip24h-sdk/app-extension"
+    sp.framework = 'linphone', 'belle-sip', 'bctoolbox'
+  end
+
+  s.subspec 'swift' do |sp|
+    sp.dependency "react-native-voip24h-sdk/basic-frameworks"
+    sp.dependency "react-native-voip24h-sdk/app-extension-swift"
+    sp.framework = 'bctoolbox-ios'
+  end
 
   s.pod_target_xcconfig    = {
     "USE_HEADERMAP" => "YES",
@@ -51,8 +84,6 @@ Pod::Spec.new do |s|
     "CLANG_CXX_LANGUAGE_STANDARD" => "c++14",
     "HEADER_SEARCH_PATHS" => "\"$(PODS_ROOT)/boost\" \"$(PODS_ROOT)/boost-for-react-native\" \"$(PODS_ROOT)/glog\" \"$(PODS_ROOT)/#{folly_prefix}Folly\" \"${PODS_ROOT}/Headers/Public/React-hermes\" \"${PODS_ROOT}/Headers/Public/hermes-engine\"",
                                "OTHER_CFLAGS" => "$(inherited)" + " " + folly_flags  }
-
-  s.dependency "linphone-sdk-novideo"
 
   s.dependency "React"
   s.dependency 'FBLazyVector'

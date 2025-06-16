@@ -7,17 +7,15 @@ import { AppRegistry, NativeEventEmitter, Platform } from 'react-native';
 import App from './App';
 import { name as appName } from './app.json';
 
-import { SipModule, SipConfigurationBuilder, TransportType } from 'react-native-voip24h-sdk'
+import { CallModule, SipConfigurationBuilder, TransportType } from 'react-native-voip24h-sdk'
 import messaging from '@react-native-firebase/messaging';
 import { NotificationUtils } from './src/utils/NotificationUtils'
-import RNCallKeep from 'react-native-callkeep'
-import VoipPushNotification from "react-native-voip-push-notification"
 
 if(Platform.OS === 'android') {
     NotificationUtils.observeNotifitionBackgroundForAndroid()
     messaging().setBackgroundMessageHandler(async (remoteMessage) => {
         console.log('Message handled in the background!', remoteMessage);
-        let eventEmitter = new NativeEventEmitter(SipModule)
+        let eventEmitter = new NativeEventEmitter(CallModule)
         eventEmitter.addListener('Ring', event => {
             NotificationUtils.displayIncomingCallNotification(event.phone)
         });
@@ -27,16 +25,16 @@ if(Platform.OS === 'android') {
 
 function Login() {
     var sipConfiguration = new SipConfigurationBuilder(
-        'extension',
-        'password',
-        'ip'
+        "844",
+        "844@&#@28082023-remove",
+        "203.162.56.226"
     )
-        .setPort(port)
+        .setPort(5060)
         .setTransportType(TransportType.Udp)
         .setKeepAlive(true)
         .build();
     // console.log(sipConfiguration);
-    SipModule.registerSipAccount(sipConfiguration);
+    CallModule.registerSipAccount(sipConfiguration);
 }
 
 AppRegistry.registerComponent(appName, () => App);

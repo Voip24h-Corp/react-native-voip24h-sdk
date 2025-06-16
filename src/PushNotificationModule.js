@@ -1,6 +1,11 @@
-import { URL } from './utils/Constant';
 import { MethodRequest, ENV } from './enum_type/EnumType';
 import axios from 'axios';
+
+const URL = {
+    API_PUSH: "http://14.225.251.99:1998",
+    REGISTER_PUSH: "http://14.225.251.99:1998/register_push_for_sdk",
+    UNREGISTER_PUSH: "http://14.225.251.99:1998/unregister_push_for_sdk"
+}
 
 const PushNotificationModule = {
     registerPushNotification: function(token, tokenDevice, sipConfiguration, platform, packageId, isProduction, deviceMac) {
@@ -35,6 +40,7 @@ const PushNotificationModule = {
             });  
         })
     },
+
     unregisterPushNotification: function(sipConfiguration, platform, packageId) {
         return new Promise((resolve, reject) => {
             let params = {

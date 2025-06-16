@@ -4,6 +4,7 @@
  *
  * @format
  */
+const path = require('path');
 
 module.exports = {
   transformer: {
@@ -13,5 +14,13 @@ module.exports = {
         inlineRequires: true,
       },
     }),
+  },
+  watchFolders: [
+    path.resolve(__dirname, '..')
+  ],
+  resolver: {
+    extraNodeModules: {
+      'react-native-voip24h-sdk': path.resolve(__dirname, '..'),
+    },
   },
 };

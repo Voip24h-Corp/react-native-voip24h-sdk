@@ -13,6 +13,7 @@
     "@notifee/react-native": "^7.8.0",
     "@react-native-firebase/app": "^18.6.1",
     "@react-native-firebase/messaging": "^18.6.1",
+    "axios": "^1.9.0",
     "react": "17.0.2",
     "react-native": "0.68.2",
     "react-native-callkeep": "^4.3.12",
@@ -20,7 +21,7 @@
     "react-native-permissions": "^3.10.1",
     "react-native-uuid": "^2.0.1",
     "react-native-voip-push-notification": "^3.3.2",
-    "react-native-voip24h-sdk": "^1.0.2"
+    "react-native-voip24h-sdk": "file:.."
   },
   "devDependencies": {
     "@babel/core": "^7.18.5",
