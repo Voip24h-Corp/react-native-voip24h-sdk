@@ -1,0 +1,25 @@
+# ninja log v5
+11	5329	1762841195689902173	CMakeFiles/appmodules.dir/Users/tanphat12041998/Documents/Work/react-native-voip24h-sdk/example/android/app/build/generated/autolinking/src/main/jni/autolinking.cpp.o	c691620861f1124c
+8	4565	1762841072426384533	rnpermissions_autolinked_build/CMakeFiles/react_codegen_rnpermissions.dir/react/renderer/components/rnpermissions/ComponentDescriptors.cpp.o	b7d4e7186549827f
+5703	5884	1762841196244105995	/Users/tanphat12041998/Documents/Work/react-native-voip24h-sdk/example/android/app/build/intermediates/cxx/Debug/2f5z1152/obj/x86_64/libappmodules.so	80477ea7629b9562
+11	5703	1762841196055511728	CMakeFiles/appmodules.dir/OnLoad.cpp.o	9b199bf9890fbac2
+0	35	0	/Users/tanphat12041998/Documents/Work/react-native-voip24h-sdk/example/android/app/.cxx/Debug/2f5z1152/x86_64/CMakeFiles/cmake.verify_globs	7e1a0c7a13dde4f9
+9	3175	1762841071043008490	rnpermissions_autolinked_build/CMakeFiles/react_codegen_rnpermissions.dir/react/renderer/components/rnpermissions/States.cpp.o	8db2baeaf4b4b96c
+10	4308	1762841072159446474	rnpermissions_autolinked_build/CMakeFiles/react_codegen_rnpermissions.dir/react/renderer/components/rnpermissions/rnpermissionsJSI-generated.cpp.o	61faf61598a107c3
+33	140	1762841703911331855	build.ninja	251003f4f8bd6488
+9	3624	1762841071493507348	rnpermissions_autolinked_build/CMakeFiles/react_codegen_rnpermissions.dir/react/renderer/components/rnpermissions/EventEmitters.cpp.o	2553d712d9916924
+9	4328	1762841072196345326	rnpermissions_autolinked_build/CMakeFiles/react_codegen_rnpermissions.dir/react/renderer/components/rnpermissions/ShadowNodes.cpp.o	707d95f98a448e48
+9	4119	1762841071988249251	rnpermissions_autolinked_build/CMakeFiles/react_codegen_rnpermissions.dir/react/renderer/components/rnpermissions/Props.cpp.o	d16dc89d14557dde
+10	4589	1762841072445992847	rnpermissions_autolinked_build/CMakeFiles/react_codegen_rnpermissions.dir/rnpermissions-generated.cpp.o	385609694048d1fb
+1	57	0	/Users/tanphat12041998/Documents/Work/react-native-voip24h-sdk/example/android/app/.cxx/Debug/2f5z1152/x86_64/CMakeFiles/cmake.verify_globs	7e1a0c7a13dde4f9
+14	3556	1762841707636503152	rnpermissions_autolinked_build/CMakeFiles/react_codegen_rnpermissions.dir/react/renderer/components/rnpermissions/States.cpp.o	8db2baeaf4b4b96c
+12	3910	1762841707990185147	rnpermissions_autolinked_build/CMakeFiles/react_codegen_rnpermissions.dir/react/renderer/components/rnpermissions/EventEmitters.cpp.o	2553d712d9916924
+10	4398	1762841708477473148	rnpermissions_autolinked_build/CMakeFiles/react_codegen_rnpermissions.dir/react/renderer/components/rnpermissions/Props.cpp.o	d16dc89d14557dde
+14	4526	1762841708600468226	rnpermissions_autolinked_build/CMakeFiles/react_codegen_rnpermissions.dir/react/renderer/components/rnpermissions/rnpermissionsJSI-generated.cpp.o	61faf61598a107c3
+13	4648	1762841708725729372	rnpermissions_autolinked_build/CMakeFiles/react_codegen_rnpermissions.dir/react/renderer/components/rnpermissions/ShadowNodes.cpp.o	707d95f98a448e48
+15	4783	1762841708854246657	rnpermissions_autolinked_build/CMakeFiles/react_codegen_rnpermissions.dir/rnpermissions-generated.cpp.o	385609694048d1fb
+10	4849	1762841708924937838	rnpermissions_autolinked_build/CMakeFiles/react_codegen_rnpermissions.dir/react/renderer/components/rnpermissions/ComponentDescriptors.cpp.o	b7d4e7186549827f
+9	4886	1762841708960315993	CMakeFiles/appmodules.dir/Users/tanphat12041998/Documents/Work/react-native-voip24h-sdk/example/android/app/build/generated/autolinking/src/main/jni/autolinking.cpp.o	c691620861f1124c
+9	5344	1762841709409793320	CMakeFiles/appmodules.dir/OnLoad.cpp.o	9b199bf9890fbac2
+5344	5612	1762841709693270250	/Users/tanphat12041998/Documents/Work/react-native-voip24h-sdk/example/android/app/build/intermediates/cxx/Debug/2f5z1152/obj/x86_64/libappmodules.so	80477ea7629b9562
+0	46	0	/Users/tanphat12041998/Documents/Work/react-native-voip24h-sdk/example/android/app/.cxx/Debug/2f5z1152/x86_64/CMakeFiles/cmake.verify_globs	7e1a0c7a13dde4f9

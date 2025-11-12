@@ -7,7 +7,6 @@
  */
 
 import React from 'react'
-import type { Node } from 'react'
 import { NativeModules, Platform, NativeEventEmitter } from 'react-native'
 import {
   SafeAreaView,
@@ -41,14 +40,14 @@ import {
 } from 'react-native-voip24h-sdk'
 
 import messaging from '@react-native-firebase/messaging'
-import { NotificationUtils } from './src/utils/NotificationUtils'
+import { NotificationUtils } from './src/utils/NotificationUtils.js'
 import RNCallKeep from 'react-native-callkeep'
 import VoipPushNotification from "react-native-voip-push-notification"
 import { requestNotifications } from 'react-native-permissions'
 import uuid from 'react-native-uuid'
 import DeviceInfo from 'react-native-device-info';
 
-const Section = ({children, title}): Node => {
+const Section = ({children, title}) => {
   const isDarkMode = useColorScheme() === 'dark'
   return (
     <View style={styles.sectionContainer}>
@@ -79,7 +78,7 @@ const secert = '8a2xxxxxxxxxxxxxxxxx'
 let callId = ''
 let tokenGraph = ''
 
-const App: () => Node = () => {
+const App = () => {
   const isDarkMode = useColorScheme() === 'dark'
 
   const backgroundStyle = {
@@ -100,7 +99,7 @@ const App: () => Node = () => {
     })
   }
 
-  const fetchData = async (token: string, params: object) => {
+  const fetchData = async (token, params) => {
     return new Promise(function (resolve) {
       GraphModule.sendRequest(MethodRequest.GET, GraphRoute.Record, token, params, {
         success: (statusCode, message, data) => resolve(data),
@@ -179,8 +178,7 @@ const App: () => Node = () => {
   const ToggleSpeaker = () => {
     CallModule.toggleSpeaker()
       .then(result => {
-        if (result) console.log('Enabled speaker')
-        else console.log('Disabled speaker')
+        console.log(result)
       })
       .catch(error => console.log(error))
   }

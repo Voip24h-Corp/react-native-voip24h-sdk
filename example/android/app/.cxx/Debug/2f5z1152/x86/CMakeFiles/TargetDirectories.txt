@@ -1,0 +1,6 @@
+/Users/tanphat12041998/Documents/Work/react-native-voip24h-sdk/example/android/app/.cxx/Debug/2f5z1152/x86/CMakeFiles/appmodules.dir
+/Users/tanphat12041998/Documents/Work/react-native-voip24h-sdk/example/android/app/.cxx/Debug/2f5z1152/x86/CMakeFiles/edit_cache.dir
+/Users/tanphat12041998/Documents/Work/react-native-voip24h-sdk/example/android/app/.cxx/Debug/2f5z1152/x86/CMakeFiles/rebuild_cache.dir
+/Users/tanphat12041998/Documents/Work/react-native-voip24h-sdk/example/android/app/.cxx/Debug/2f5z1152/x86/rnpermissions_autolinked_build/CMakeFiles/react_codegen_rnpermissions.dir
+/Users/tanphat12041998/Documents/Work/react-native-voip24h-sdk/example/android/app/.cxx/Debug/2f5z1152/x86/rnpermissions_autolinked_build/CMakeFiles/edit_cache.dir
+/Users/tanphat12041998/Documents/Work/react-native-voip24h-sdk/example/android/app/.cxx/Debug/2f5z1152/x86/rnpermissions_autolinked_build/CMakeFiles/rebuild_cache.dir
