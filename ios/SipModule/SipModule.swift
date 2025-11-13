@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import React
 
 class SipModule {
     
@@ -21,6 +22,7 @@ class SipModule {
         return SipModule(event: eventEmitter)
     }
     
+    private var isInitial = false
     private var mCore: Core!
     private var timeStartStreamingRunning: Int64 = 0
     private var mRegistrationDelegate : CoreDelegate!
@@ -49,104 +51,112 @@ class SipModule {
     
     private func initializeModule() {
         do {
-            LoggingService.Instance.logLevel = LogLevel.Debug
-            
-            try? mCore = Factory.Instance.createCore(configPath: "", factoryConfigPath: "", systemContext: nil)
-            mCore.maxCalls = 1
-            try? mCore.start()
-            
-            // Create a Core listener to listen for the callback we need
-            // In this case, we want to know about the account registration status
-            mRegistrationDelegate = CoreDelegateStub(
-                onCallStateChanged: {(
-                    core: Core,
-                    call: Call,
-                    state: Call.State?,
-                    message: String
-                ) in
-                    switch (state) {
-                    case .IncomingReceived:
-                        // Immediately hang up when we receive a call. There's nothing inherently wrong with this
-                        // but we don't need it right now, so better to leave it deactivated.
-                        // try! call.terminate()
-                        NSLog("IncomingReceived")
-                        let ext = core.defaultAccount?.contactAddress?.username ?? ""
-                        let phone = call.remoteAddress?.username ?? ""
-                        self.eventEmitter?.sendEvent(withName: "Ring", body: ["extension": ext, "phone": phone, "type": CallType.inbound.rawValue])
-                    case .OutgoingInit:
-                        // First state an outgoing call will go through
-                        NSLog("OutgoingInit")
-                    case .OutgoingProgress:
-                        // First state an outgoing call will go through
-                        NSLog("OutgoingProgress")
-                        let ext = core.defaultAccount?.contactAddress?.username ?? ""
-                        let phone = call.remoteAddress?.username ?? ""
-                        self.eventEmitter?.sendEvent(withName: "Ring", body: ["extension": ext, "phone": phone, "type": CallType.outbound.rawValue])
-                    case .OutgoingRinging:
-                        // Once remote accepts, ringing will commence (180 response)
-                        NSLog("OutgoingRinging")
-                    case .Connected:
-                        NSLog("Connected")
-                    case .StreamsRunning:
-                        // This state indicates the call is active.
-                        // You may reach this state multiple times, for example after a pause/resume
-                        // or after the ICE negotiation completes
-                        // Wait for the call to be connected before allowing a call update
-                        NSLog("StreamsRunning")
-                        if(!self.isPause) {
-                            self.timeStartStreamingRunning = Int64(Date().timeIntervalSince1970 * 1000)
+//            LoggingService.Instance.logLevel = LogLevel.Debug
+            if !isInitial {
+                try mCore = Factory.Instance.createCore(configPath: "", factoryConfigPath: "", systemContext: nil)
+                mCore.maxCalls = 1
+                mCore.echoCancellationEnabled = true
+                mCore.echoLimiterEnabled = true
+                mCore.adaptiveRateControlEnabled = true
+                
+                // Create a Core listener to listen for the callback we need
+                // In this case, we want to know about the account registration status
+                mRegistrationDelegate = CoreDelegateStub(
+                    onCallStateChanged: {(
+                        core: Core,
+                        call: Call,
+                        state: Call.State?,
+                        message: String
+                    ) in
+                        switch (state) {
+                        case .IncomingReceived:
+                            // Immediately hang up when we receive a call. There's nothing inherently wrong with this
+                            // but we don't need it right now, so better to leave it deactivated.
+                            // try! call.terminate()
+                            NSLog("IncomingReceived")
+                            let ext = core.defaultAccount?.contactAddress?.username ?? ""
+                            let phone = call.remoteAddress?.username ?? ""
+                            self.eventEmitter?.sendEvent(withName: "Ring", body: ["extension": ext, "phone": phone, "type": CallType.inbound.rawValue])
+                        case .OutgoingInit:
+                            // First state an outgoing call will go through
+                            NSLog("OutgoingInit")
+                        case .OutgoingProgress:
+                            // First state an outgoing call will go through
+                            NSLog("OutgoingProgress")
+                            let ext = core.defaultAccount?.contactAddress?.username ?? ""
+                            let phone = call.remoteAddress?.username ?? ""
+                            self.eventEmitter?.sendEvent(withName: "Ring", body: ["extension": ext, "phone": phone, "type": CallType.outbound.rawValue])
+                        case .OutgoingRinging:
+                            // Once remote accepts, ringing will commence (180 response)
+                            NSLog("OutgoingRinging")
+                        case .Connected:
+                            NSLog("Connected")
+                        case .StreamsRunning:
+                            // This state indicates the call is active.
+                            // You may reach this state multiple times, for example after a pause/resume
+                            // or after the ICE negotiation completes
+                            // Wait for the call to be connected before allowing a call update
+                            NSLog("StreamsRunning")
+                            if(!self.isPause) {
+                                self.timeStartStreamingRunning = Int64(Date().timeIntervalSince1970 * 1000)
+                            }
+                            self.isPause = false
+                            let callId = call.callLog?.callId ?? ""
+                            self.eventEmitter?.sendEvent(withName: "Up", body: ["callId": callId])
+                        case .Paused:
+                            NSLog("Paused")
+                            self.isPause = true
+                            self.eventEmitter?.sendEvent(withName: "Paused", body: nil)
+                        case .Resuming:
+                            NSLog("Resuming")
+                            self.eventEmitter?.sendEvent(withName: "Resuming", body: nil)
+                        case .PausedByRemote:
+                            NSLog("PausedByRemote")
+                        case .Updating:
+                            // When we request a call update, for example when toggling video
+                            NSLog("Updating")
+                        case .UpdatedByRemote:
+                            NSLog("UpdatedByRemote")
+                        case .Released:
+                            if(self.isMissed(callLog: call.callLog)) {
+                                NSLog("Missed")
+                                let callee = call.remoteAddress?.username ?? ""
+                                let totalMissed = core.missedCallsCount
+                                self.eventEmitter?.sendEvent(withName: "Missed", body: ["phone": callee, "totalMissed": totalMissed])
+                            } else {
+                                NSLog("Released")
+                            }
+                        case .End:
+                            NSLog("End")
+                            let duration = self.timeStartStreamingRunning == 0 ? 0 : Int64(Date().timeIntervalSince1970 * 1000) - self.timeStartStreamingRunning
+                            self.eventEmitter?.sendEvent(withName: "Hangup", body: ["duration": duration])
+                            self.timeStartStreamingRunning = 0
+                        case .Error:
+                            NSLog("Error")
+                            self.eventEmitter?.sendEvent(withName: "Error", body: ["message": message])
+                        default:
+                            NSLog("Nothing")
                         }
-                        self.isPause = false
-                        let callId = call.callLog?.callId ?? ""
-                        self.eventEmitter?.sendEvent(withName: "Up", body: ["callId": callId])
-                    case .Paused:
-                        NSLog("Paused")
-                        self.isPause = true
-                        self.eventEmitter?.sendEvent(withName: "Paused", body: nil)
-                    case .Resuming:
-                        NSLog("Resuming")
-                        self.eventEmitter?.sendEvent(withName: "Resuming", body: nil)
-                    case .PausedByRemote:
-                        NSLog("PausedByRemote")
-                    case .Updating:
-                        // When we request a call update, for example when toggling video
-                        NSLog("Updating")
-                    case .UpdatedByRemote:
-                        NSLog("UpdatedByRemote")
-                    case .Released:
-                        if(self.isMissed(callLog: call.callLog)) {
-                            NSLog("Missed")
-                            let callee = call.remoteAddress?.username ?? ""
-                            let totalMissed = core.missedCallsCount
-                            self.eventEmitter?.sendEvent(withName: "Missed", body: ["phone": callee, "totalMissed": totalMissed])
-                        } else {
-                            NSLog("Released")
-                        }
-                    case .End:
-                        NSLog("End")
-                        let duration = self.timeStartStreamingRunning == 0 ? 0 : Int64(Date().timeIntervalSince1970 * 1000) - self.timeStartStreamingRunning
-                        self.eventEmitter?.sendEvent(withName: "Hangup", body: ["duration": duration])
-                        self.timeStartStreamingRunning = 0
-                    case .Error:
-                        NSLog("Error")
-                        self.eventEmitter?.sendEvent(withName: "Error", body: ["message": message])
-                    default:
-                        NSLog("Nothing")
+                    },
+                    //                onAudioDevicesListUpdated: { (core: Core) in
+                    //                    let currentAudioDeviceType = core.currentCall?.outputAudioDevice?.type
+                    //                    if(currentAudioDeviceType != AudioDeviceType.Speaker && currentAudioDeviceType != AudioDeviceType.Earpiece) {
+                    //                        return
+                    //                    }z
+                    //                    let audioOutputType = AudioOutputType.allCases[currentAudioDeviceType!.rawValue].rawValue
+                    //                    self.sendEvent(withName: "AudioDevicesChanged", body: ["audioOutputType": audioOutputType])
+                    //                },
+                    onAccountRegistrationStateChanged: { (core: Core, account: Account, state: RegistrationState, message: String) in
+                        self.eventEmitter?.sendEvent(withName: "AccountRegistrationStateChanged", body: ["registrationState": RegisterSipState.allCases[state.rawValue].rawValue, "message": message])
                     }
-                },
-//                onAudioDevicesListUpdated: { (core: Core) in
-//                    let currentAudioDeviceType = core.currentCall?.outputAudioDevice?.type
-//                    if(currentAudioDeviceType != AudioDeviceType.Speaker && currentAudioDeviceType != AudioDeviceType.Earpiece) {
-//                        return
-//                    }z
-//                    let audioOutputType = AudioOutputType.allCases[currentAudioDeviceType!.rawValue].rawValue
-//                    self.sendEvent(withName: "AudioDevicesChanged", body: ["audioOutputType": audioOutputType])
-//                },
-                onAccountRegistrationStateChanged: { (core: Core, account: Account, state: RegistrationState, message: String) in
-                    self.eventEmitter?.sendEvent(withName: "AccountRegistrationStateChanged", body: ["registrationState": RegisterSipState.allCases[state.rawValue].rawValue, "message": message])
-                }
-            )
-            mCore.addDelegate(delegate: mRegistrationDelegate)
+                )
+                mCore.removeDelegate(delegate: mRegistrationDelegate)
+                mCore.addDelegate(delegate: mRegistrationDelegate)
+                try mCore.start()
+                isInitial = true
+            }
+        } catch {
+            NSLog(error.localizedDescription)
         }
     }
     
@@ -209,6 +219,7 @@ class SipModule {
             account.params = clonedParams
             mCore.clearProxyConfig()
             deleteSipAccount()
+            NSLog("Unregister successful")
         }
     }
     
@@ -266,12 +277,16 @@ class SipModule {
         NSLog("Trying to hang up")
         do {
             
-            if (mCore.callsNb == 0) { return }
+            if (mCore.callsNb == 0) {
+                NSLog("No call to terminate")
+                return
+            }
             
             // If the call state isn't paused, we can get it using core.currentCall
-            let coreCall = (mCore.currentCall != nil) ? mCore.currentCall : mCore.calls[0]
+            let currentCall = (mCore.currentCall != nil) ? mCore.currentCall : mCore.calls[0]
             
-            if(coreCall == nil) {
+            if(currentCall == nil) {
+                NSLog("No call to terminate")
                 return
             }
             
@@ -281,11 +296,8 @@ class SipModule {
 //            }
             
             // Terminating a call is quite simple
-            if let call = coreCall {
-                try call.terminate()
-            } else {
-                NSLog("No call to terminate")
-            }
+            try currentCall?.terminate()
+            NSLog("Hangup successful")
         } catch {
             NSLog(error.localizedDescription)
         }
@@ -294,7 +306,12 @@ class SipModule {
     func decline() {
         NSLog("Try to decline")
         do {
-            try mCore.currentCall?.decline(reason: Reason.Busy)
+            let currentCall = (mCore.currentCall != nil) ? mCore.currentCall : mCore.calls.first
+            if(currentCall == nil) {
+                NSLog("No call to decline")
+                return
+            }
+            try currentCall?.decline(reason: Reason.Busy)
             NSLog("Reject successful")
         } catch {
             NSLog(error.localizedDescription)
@@ -305,7 +322,13 @@ class SipModule {
     func acceptCall() {
         NSLog("Try accept call")
         do {
-            try mCore.currentCall?.accept()
+            let currentCall = (mCore.currentCall != nil) ? mCore.currentCall : mCore.calls.first
+            if(currentCall == nil) {
+                NSLog("No call to accept")
+                return
+            }
+            try currentCall?.accept()
+            NSLog("Accept successful")
         } catch {
             NSLog(error.localizedDescription)
         }
@@ -314,16 +337,16 @@ class SipModule {
     func pause() {
         NSLog("Try to pause")
         do {
-            if (mCore.callsNb == 0) { return }
-            
-            let coreCall = (mCore.currentCall != nil) ? mCore.currentCall : mCore.calls[0]
-            
-            if let call = coreCall {
-                try call.pause()
-            } else {
+            if (mCore.callsNb == 0) {
                 NSLog("No call to pause")
+                return
             }
-            
+            let currentCall = (mCore.currentCall != nil) ? mCore.currentCall : mCore.calls[0]
+            if(currentCall == nil) {
+                NSLog("No call to pause")
+                return
+            }
+            try currentCall?.pause()
         } catch {
             NSLog(error.localizedDescription)
         }
@@ -332,16 +355,16 @@ class SipModule {
     func resume() {
         NSLog("Try to resume")
         do {
-            if (mCore.callsNb == 0) { return }
-            
-            let coreCall = (mCore.currentCall != nil) ? mCore.currentCall : mCore.calls[0]
-            
-            if let call = coreCall {
-                try call.resume()
-            } else {
+            if (mCore.callsNb == 0) {
                 NSLog("No to call to resume")
+                return
             }
-            
+            let currentCall = (mCore.currentCall != nil) ? mCore.currentCall : mCore.calls[0]
+            if(currentCall == nil) {
+                NSLog("No to call to resume")
+                return
+            }
+            try currentCall?.resume()
         } catch {
             NSLog(error.localizedDescription)
         }
@@ -350,9 +373,12 @@ class SipModule {
     func transfer(recipient: String) {
         NSLog("Try to transfer")
         do {
-            if (mCore.callsNb == 0) { return }
+            if (mCore.callsNb == 0) {
+                NSLog("No call to transfer")
+                return
+            }
             
-            let coreCall = (mCore.currentCall != nil) ? mCore.currentCall : mCore.calls[0]
+            let currentCall = (mCore.currentCall != nil) ? mCore.currentCall : mCore.calls[0]
             
             let domain: String? = mCore.defaultAccount?.params?.domain
             NSLog("Domain: %@", domain ?? "")
@@ -368,7 +394,7 @@ class SipModule {
                 return
             }
             
-            if let call = coreCall {
+            if let call = currentCall {
                 try call.transferTo(referTo: address!)
             } else {
                 NSLog("No call to transfer")
@@ -465,15 +491,21 @@ class SipModule {
 
     func sendDtmf(dtmf: String) {
         do {
-            try mCore.currentCall?.sendDtmf(dtmf: dtmf.utf8CString[0])
+            let currentCall = (mCore.currentCall != nil) ? mCore.currentCall : mCore.calls.first
+            if(currentCall == nil) {
+                NSLog("No call to sendDtmf")
+                return
+            }
+            try currentCall?.sendDtmf(dtmf: dtmf.utf8CString[0])
         } catch {
             NSLog("DTMF not recognised", error.localizedDescription)
         }
     }
     
     func toggleMic(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-        if(mCore.currentCall == nil) {
-            reject("Call ID not found", "Call ID not found", nil)
+        let currentCall = (mCore.currentCall != nil) ? mCore.currentCall : mCore.calls.first
+        if(currentCall == nil) {
+            resolve("Call ID not found")
         } else {
             mCore.micEnabled = !mCore.micEnabled
             resolve(mCore.micEnabled)
@@ -481,11 +513,12 @@ class SipModule {
     }
     
     func toggleSpeaker(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-        if(mCore.currentCall == nil) {
-            reject("Call ID not found", "Call ID not found", nil)
+        let currentCall = (mCore.currentCall != nil) ? mCore.currentCall : mCore.calls.first
+        if(currentCall == nil) {
+            resolve("Call ID not found")
         } else {
-            let currentAudioDevice = mCore.currentCall?.outputAudioDevice
-            let speakerEnabled = currentAudioDevice?.type == AudioDeviceType.Speaker
+            let currentAudioDevice = currentCall?.outputAudioDevice
+            let speakerEnabled = currentAudioDevice?.type == AudioDevice.Kind.Speaker
             
             // We can get a list of all available audio devices using
             // Note that on tablets for example, there may be no Earpiece device
@@ -494,13 +527,13 @@ class SipModule {
                 // For IOS, the Speaker is an exception, Linphone cannot differentiate Input and Output.
                 // This means that the default output device, the earpiece, is paired with the default phone microphone.
                 // Setting the output audio device to the microphone will redirect the sound to the earpiece.
-                if (speakerEnabled && audioDevice.type == AudioDeviceType.Microphone) {
-                    mCore.currentCall?.outputAudioDevice = audioDevice
+                if (speakerEnabled && audioDevice.type == AudioDevice.Kind.Microphone) {
+                    currentCall?.outputAudioDevice = audioDevice
                     resolve(false)
                     // isSpeakerEnabled = false
                     //return
-                } else if (!speakerEnabled && audioDevice.type == AudioDeviceType.Speaker) {
-                    mCore.currentCall?.outputAudioDevice = audioDevice
+                } else if (!speakerEnabled && audioDevice.type == AudioDevice.Kind.Speaker) {
+                    currentCall?.outputAudioDevice = audioDevice
                     resolve(true)
                     // isSpeakerEnabled = true
                     //return
@@ -514,11 +547,12 @@ class SipModule {
     }
     
     func getCallId(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-        let callId = mCore.currentCall?.callLog?.callId
+        let currentCall = (mCore.currentCall != nil) ? mCore.currentCall : mCore.calls.first
+        let callId = currentCall?.callLog?.callId
         if (callId != nil && !callId!.isEmpty) {
             resolve(callId!)
         } else {
-            reject("Call ID not found", "Call ID not found", nil)
+            resolve("Call ID not found")
         }
     }
     
@@ -527,7 +561,7 @@ class SipModule {
         if(state != nil) {
             resolve(RegisterSipState.allCases[state!.rawValue].rawValue)
         } else {
-            reject("Register state not found", "Register state not found", nil)
+            resolve("Register state not found")
         }
     }
     
@@ -540,16 +574,21 @@ class SipModule {
     }
     
     func isSpeakerEnabled(resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
-        let currentAudioDevice = mCore.currentCall?.outputAudioDevice
-        let speakerEnabled = currentAudioDevice?.type == AudioDeviceType.Speaker
-        resolve(speakerEnabled)
+        let currentCall = (mCore.currentCall != nil) ? mCore.currentCall : mCore.calls.first
+        if(currentCall == nil) {
+            resolve("Current call not found")
+        } else {
+            let currentAudioDevice = currentCall?.outputAudioDevice
+            let speakerEnabled = currentAudioDevice?.type == AudioDevice.Kind.Speaker
+            resolve(speakerEnabled)
+        }
     }
     
     func setCodecs(codec: String, isEnable: Bool, resolve: RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) {
         let payload = mCore.audioPayloadTypes.first { $0.mimeType.caseInsensitiveCompare(codec) == .orderedSame }
         if payload == nil {
             NSLog("Invalid codec")
-            reject("Set codecs", "Codec not found", nil)
+            resolve("Invalid codec")
         } else {
             let _ = payload!.enable(enabled: isEnable)
             resolve("Set codecs successful")

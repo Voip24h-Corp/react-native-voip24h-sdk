@@ -1,0 +1,1 @@
+/Users/tanphat12041998/Documents/Work/react-native-voip24h-sdk/example/android/app/build/intermediates/cxx/Debug/2f5z1152/obj/armeabi-v7a

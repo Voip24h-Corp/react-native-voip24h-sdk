@@ -10,18 +10,23 @@ import com.reactlibrary.enum.CallType
 import com.reactlibrary.enum.SipEvent
 import com.reactlibrary.extensions.sendEvent
 import com.reactlibrary.models.SipConfiguration
-import org.linphone.core.*
+import org.linphone.core.Account
+import org.linphone.core.AudioDevice
+import org.linphone.core.Call
+import org.linphone.core.CallLog
+import org.linphone.core.Core
+import org.linphone.core.CoreListenerStub
+import org.linphone.core.Factory
+import org.linphone.core.MediaEncryption
+import org.linphone.core.RegistrationState
+import org.linphone.core.TransportType
 
 class SipModule(private val reactContext: ReactContext) {
 
     private lateinit var mCore: Core
     private var timeStartStreamingRunning: Long = 0
     private var isPause = false
-
-    init {
-        initializeModule(reactContext)
-    }
-
+    private var isInitialized = false
     private val coreListener = object : CoreListenerStub() {
         override fun onAccountRegistrationStateChanged(
             core: Core,
@@ -30,7 +35,10 @@ class SipModule(private val reactContext: ReactContext) {
             message: String
         ) {
             Log.d(TAG, state.toString())
-            reactContext.sendEvent(SipEvent.AccountRegistrationStateChanged.value, createParams("registrationState" to (state?.name ?: ""), "message" to message))
+            reactContext.sendEvent(
+                SipEvent.AccountRegistrationStateChanged.value,
+                createParams("registrationState" to (state?.name ?: ""), "message" to message)
+            )
         }
 
 //        override fun onAudioDeviceChanged(core: Core, audioDevice: AudioDevice) {
@@ -52,62 +60,79 @@ class SipModule(private val reactContext: ReactContext) {
                     Log.d(TAG, "IncomingReceived")
                     val extension = core.defaultAccount?.contactAddress?.username ?: ""
                     val phone = call.remoteAddress.username ?: ""
-                    reactContext.sendEvent(SipEvent.Ring.value, createParams("extension" to extension, "phone" to phone, "type" to CallType.inbound.value))
+                    reactContext.sendEvent(
+                        SipEvent.Ring.value,
+                        createParams("extension" to extension, "phone" to phone, "type" to CallType.inbound.value)
+                    )
                 }
+
                 Call.State.OutgoingInit -> {
                     // First state an outgoing call will go through
                     Log.d(TAG, "OutgoingInit")
                 }
+
                 Call.State.OutgoingProgress -> {
                     // First state an outgoing call will go through
                     Log.d(TAG, "OutgoingProgress")
                     val extension = core.defaultAccount?.contactAddress?.username ?: ""
                     val phone = call.remoteAddress.username ?: ""
-                    reactContext.sendEvent(SipEvent.Ring.value, createParams("extension" to extension, "phone" to phone, "type" to CallType.outbound.value))
+                    reactContext.sendEvent(
+                        SipEvent.Ring.value,
+                        createParams("extension" to extension, "phone" to phone, "type" to CallType.outbound.value)
+                    )
                 }
+
                 Call.State.OutgoingRinging -> {
                     // Once remote accepts, ringing will commence (180 response)
                     Log.d(TAG, "OutgoingRinging")
                 }
+
                 Call.State.Connected -> {
                     Log.d(TAG, "Connected")
                 }
+
                 Call.State.StreamsRunning -> {
                     // This state indicates the call is active.
                     // You may reach this state multiple times, for example after a pause/resume
                     // or after the ICE negotiation completes
                     // Wait for the call to be connected before allowing a call update
                     Log.d(TAG, "StreamsRunning")
-                    if(!isPause) {
+                    if (!isPause) {
                         timeStartStreamingRunning = System.currentTimeMillis()
                     }
                     isPause = false
                     val callId = call.callLog.callId ?: ""
                     reactContext.sendEvent(SipEvent.Up.value, createParams("callId" to callId))
                 }
+
                 Call.State.Paused -> {
                     Log.d(TAG, "Paused")
                     isPause = true
                     reactContext.sendEvent(SipEvent.Paused.value, null)
                 }
+
                 Call.State.Resuming -> {
                     Log.d(TAG, "Resuming")
                     reactContext.sendEvent(SipEvent.Resuming.value, null)
                 }
+
                 Call.State.PausedByRemote -> {
                     Log.d(TAG, "PausedByRemote")
                 }
+
                 Call.State.Updating -> {
                     // When we request a call update, for example when toggling video
                     Log.d(TAG, "Updating")
                 }
+
                 Call.State.UpdatedByRemote -> {
                     Log.d(TAG, "UpdatedByRemote")
                 }
+
                 Call.State.Released -> {
                     Log.d(TAG, "Released")
-                    if(isMissed(call.callLog)) {
-                        Log.d(TAG,"Missed")
+                    if (isMissed(call.callLog)) {
+                        Log.d(TAG, "Missed")
                         val callee = call.remoteAddress.username ?: ""
                         val totalMissed = core.missedCallsCount.toString()
                         reactContext.sendEvent(SipEvent.Missed.value, createParams("phone" to callee, "totalMissed" to totalMissed))
@@ -115,21 +140,28 @@ class SipModule(private val reactContext: ReactContext) {
                         Log.d(TAG, "Released")
                     }
                 }
+
                 Call.State.End -> {
                     Log.d(TAG, "End")
-                    val duration = if(timeStartStreamingRunning == 0L) 0 else System.currentTimeMillis() - timeStartStreamingRunning
+                    val duration = if (timeStartStreamingRunning == 0L) 0 else System.currentTimeMillis() - timeStartStreamingRunning
                     reactContext.sendEvent(SipEvent.Hangup.value, createParams("duration" to duration.toString()))
                     timeStartStreamingRunning = 0
                 }
+
                 Call.State.Error -> {
                     Log.d(TAG, "Error")
                     reactContext.sendEvent(SipEvent.Error.value, createParams("message" to message))
                 }
+
                 else -> {
                     Log.d(TAG, "Nothing")
                 }
             }
         }
+    }
+
+    init {
+        initializeModule(reactContext)
     }
 
     private fun createParams(vararg params: Pair<String, String>): WritableMap {
@@ -141,11 +173,19 @@ class SipModule(private val reactContext: ReactContext) {
     }
 
     private fun initializeModule(context: Context) {
+        if (isInitialized) return
         val factory = Factory.instance()
         mCore = factory.createCore(null, null, context)
-        mCore.maxCalls = 1
-        mCore.start()
-        mCore.addListener(coreListener)
+        mCore.apply {
+            mCore.maxCalls = 1
+            isEchoCancellationEnabled = true
+            isEchoLimiterEnabled = true
+            isAdaptiveRateControlEnabled = true
+            removeListener(coreListener)
+            addListener(coreListener)
+            start()
+        }
+        isInitialized = true
     }
 
     fun registerSipAccount(sipConfiguration: SipConfiguration) {
@@ -253,9 +293,14 @@ class SipModule(private val reactContext: ReactContext) {
     fun hangup() {
         Log.d(TAG, "Trying to hang up")
         try {
-            if (mCore.callsNb == 0) return
-            val coreCall = mCore.currentCall ?: mCore.calls.firstOrNull()
-            coreCall?.terminate()
+            if (mCore.callsNb == 0) {
+                Log.d(TAG, "No active call to hang up")
+                return
+            }
+            val currentCall = mCore.currentCall ?: mCore.calls.firstOrNull()
+            currentCall?.terminate() ?: kotlin.run {
+                Log.d(TAG, "Current call not found")
+            }
         } catch (e: Exception) {
             Log.d(TAG, e.message.toString())
         }
@@ -264,7 +309,10 @@ class SipModule(private val reactContext: ReactContext) {
     fun acceptCall() {
         Log.d(TAG, "Try to accept call")
         try {
-            mCore.currentCall?.accept()
+            val currentCall = mCore.currentCall ?: mCore.calls.firstOrNull()
+            currentCall?.accept() ?: kotlin.run {
+                Log.d(TAG, "Current call not found")
+            }
         } catch (e: Exception) {
             Log.d(TAG, e.message.toString())
         }
@@ -273,7 +321,10 @@ class SipModule(private val reactContext: ReactContext) {
     fun decline() {
         Log.d(TAG, "Try to accept call")
         try {
-            mCore.currentCall?.terminate()
+            val currentCall = mCore.currentCall ?: mCore.calls.firstOrNull()
+            currentCall?.terminate() ?: kotlin.run {
+                Log.d(TAG, "Current call not found")
+            }
         } catch (e: Exception) {
             Log.d(TAG, e.message.toString())
         }
@@ -282,9 +333,14 @@ class SipModule(private val reactContext: ReactContext) {
     fun pause() {
         Log.d(TAG, "Try to pause")
         try {
-            if (mCore.callsNb == 0) return
-            val coreCall = mCore.currentCall ?: mCore.calls.firstOrNull()
-            coreCall?.pause()
+            if (mCore.callsNb == 0) {
+                Log.d(TAG, "No active call to pause")
+                return
+            }
+            val currentCall = mCore.currentCall ?: mCore.calls.firstOrNull()
+            currentCall?.pause() ?: kotlin.run {
+                Log.d(TAG, "Current call not found")
+            }
         } catch (e: Exception) {
             Log.d(TAG, e.message.toString())
         }
@@ -293,9 +349,14 @@ class SipModule(private val reactContext: ReactContext) {
     fun resume() {
         Log.d(TAG, "Try to resume")
         try {
-            if (mCore.callsNb == 0) return
-            val coreCall = mCore.currentCall ?: mCore.calls.firstOrNull()
-            coreCall?.resume()
+            if (mCore.callsNb == 0) {
+                Log.d(TAG, "No active call to resume")
+                return
+            }
+            val currentCall = mCore.currentCall ?: mCore.calls.firstOrNull()
+            currentCall?.resume() ?: kotlin.run {
+                Log.d(TAG, "Current call not found")
+            }
         } catch (e: Exception) {
             Log.d(TAG, e.message.toString())
         }
@@ -304,7 +365,10 @@ class SipModule(private val reactContext: ReactContext) {
     fun transfer(recipient: String) {
         Log.d(TAG, "Try to transfer")
         try {
-            if (mCore.callsNb == 0) return
+            if (mCore.callsNb == 0) {
+                Log.d(TAG, "No active call to transfer")
+                return
+            }
             val domain = mCore.defaultAccount?.params?.domain
             Log.d(TAG, "Domain: $domain")
             if (domain == null) {
@@ -312,8 +376,10 @@ class SipModule(private val reactContext: ReactContext) {
                 return
             }
             val address = mCore.interpretUrl("sip:$recipient@$domain") ?: return
-            val coreCall = mCore.currentCall ?: mCore.calls.firstOrNull()
-            coreCall?.transferTo(address)
+            val currentCall = mCore.currentCall ?: mCore.calls.firstOrNull()
+            currentCall?.transferTo(address) ?: kotlin.run {
+                Log.d(TAG, "Current call not found")
+            }
         } catch (e: Exception) {
             Log.d(TAG, e.message.toString())
         }
@@ -321,14 +387,18 @@ class SipModule(private val reactContext: ReactContext) {
 
     fun sendDtmf(dtmf: String) {
         try {
-            mCore.currentCall?.sendDtmf(dtmf.first())
+            val currentCall = mCore.currentCall ?: mCore.calls.firstOrNull()
+            currentCall?.sendDtmf(dtmf.first()) ?: kotlin.run {
+                Log.d(TAG, "Current call not found")
+            }
         } catch (e: Exception) {
             Log.d(TAG, e.message.toString())
         }
     }
 
     fun toggleMic(promise: Promise) {
-        if (mCore.currentCall == null) {
+        val currentCall = mCore.currentCall ?: mCore.calls.firstOrNull()
+        if (currentCall == null) {
             promise.reject(Throwable("Current call not found"))
         }
         mCore.isMicEnabled = !mCore.isMicEnabled
@@ -336,24 +406,26 @@ class SipModule(private val reactContext: ReactContext) {
     }
 
     fun toggleSpeaker(promise: Promise) {
-        if (mCore.currentCall == null) {
+        val currentCall = mCore.currentCall ?: mCore.calls.firstOrNull()
+        if (currentCall == null) {
             promise.reject(Throwable("Current call not found"))
         }
-        val currentAudioDevice = mCore.currentCall?.outputAudioDevice
+        val currentAudioDevice = currentCall?.outputAudioDevice
         val speakerEnabled = currentAudioDevice?.type == AudioDevice.Type.Speaker
         for (audioDevice in mCore.audioDevices) {
             if (speakerEnabled && audioDevice.type == AudioDevice.Type.Earpiece) {
-                mCore.currentCall?.outputAudioDevice = audioDevice
+                currentCall.outputAudioDevice = audioDevice
                 promise.resolve(false)
             } else if (!speakerEnabled && audioDevice.type == AudioDevice.Type.Speaker) {
-                mCore.currentCall?.outputAudioDevice = audioDevice
+                currentCall?.outputAudioDevice = audioDevice
                 promise.resolve(true)
             }
         }
     }
 
     fun getCallId(promise: Promise) {
-        mCore.currentCall?.callLog?.callId?.let {
+        val currentCall = mCore.currentCall ?: mCore.calls.firstOrNull()
+        currentCall?.callLog?.callId?.let {
             promise.resolve(it)
         } ?: kotlin.run {
             promise.reject(Throwable("Call ID not found"))
@@ -377,7 +449,8 @@ class SipModule(private val reactContext: ReactContext) {
     }
 
     fun isSpeakerEnabled(promise: Promise) {
-        val currentAudioDevice = mCore.currentCall?.outputAudioDevice
+        val currentCall = mCore.currentCall ?: mCore.calls.firstOrNull()
+        val currentAudioDevice = currentCall?.outputAudioDevice
         val speakerEnabled = currentAudioDevice?.type == AudioDevice.Type.Speaker
         promise.resolve(speakerEnabled)
     }
@@ -401,11 +474,12 @@ class SipModule(private val reactContext: ReactContext) {
 
     companion object {
         private const val TAG = "SipModule"
+        private var INSTANCE: SipModule? = null
 
-        fun newInstance(reactContext: ReactContext): SipModule = SipModule(reactContext)
-    }
-
-    init {
-        initializeModule(reactContext)
+        fun getInstance(reactContext: ReactContext): SipModule {
+            return INSTANCE ?: synchronized(this) {
+                INSTANCE ?: SipModule(reactContext).also { INSTANCE = it }
+            }
+        }
     }
 }

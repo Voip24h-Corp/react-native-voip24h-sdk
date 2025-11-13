@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.4] - 13.11.2025
+
+### Required
+
+- Yêu cầu RN >= 0.77.3
+
+### Update
+
+- Fix policy 16KB page size
+- Fix policy Bitcode
+
 ## [1.0.3] - 16.06.2025
 
 ### Update

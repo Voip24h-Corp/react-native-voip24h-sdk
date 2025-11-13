@@ -19,4 +19,6 @@ public enum RegisterSipState : String, CaseIterable {
     case Cleared = "Cleared"
     /// Registration failed.
     case Failed = "Failed"
+    /// Refreshing
+    case Refreshing = "Refreshing"
 }

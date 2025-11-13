@@ -14,7 +14,7 @@ import com.reactlibrary.sip_module.SipModule
 class Voip24hSdkModule(private val reactContext: ReactApplicationContext) :
     ReactContextBaseJavaModule(reactContext) {
 
-    private val sipModule by lazy { SipModule.newInstance(reactContext) }
+    private val sipModule by lazy { SipModule.getInstance(reactContext) }
 
     companion object {
         private const val TAG = "Voip24hSdkModule"
